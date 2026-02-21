@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Meta Tag per Social -->
     <title>Quiz del Mugugno - Bordighera Domani 2026</title>
     <meta name="description" content="Test ufficiale per i candidati: conosci davvero i problemi dei cittadini di Bordighera?">
     <meta property="og:title" content="Quiz del Mugugno - Bordighera Domani 2026">
@@ -12,7 +11,6 @@
     <meta property="og:image" content="https://github.com/riviera-code/quizmugugno/blob/main/Bordighera-domani.png?raw=true">
     <meta property="og:type" content="website">
     
-    <!-- Librerie Esterne -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -27,20 +25,17 @@
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .arcade-btn:active { transform: translateY(2px); filter: brightness(1.2); }
-        .option-btn { transition: all 0.2s; border: 2px solid #f1f5f9; }
-        .option-btn:hover { border-color: #3b82f6; background-color: #eff6ff; }
     </style>
 </head>
 <body class="bg-slate-50 font-sans no-select">
     <div id="root"></div>
 
-    <!-- Firebase SDK (Caricamento Modulare) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getFirestore, collection, doc, addDoc, getDocs, deleteDoc, query, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, addDoc, getDocs, deleteDoc, query, onSnapshot, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
-        window.fb = { initializeApp, getFirestore, collection, doc, addDoc, getDocs, deleteDoc, query, onSnapshot, orderBy, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken };
+        window.fb = { initializeApp, getFirestore, collection, doc, addDoc, getDocs, deleteDoc, query, onSnapshot, orderBy, limit, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken };
     </script>
 
     <script type="text/babel">
@@ -52,24 +47,24 @@
         const quizData = [
             { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Costo eccessivo TARI", "Mancanza di cestini", "Inefficienza sistema tessere e scomodità", "Pochi passaggi estivi", "Nessuna delle precedenti"], correct: 2 },
             { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["Aumento dei dehors", "La pedonalizzazione completa", "Più stabilimenti privati", "Nuovi parcheggi sulla spiaggia", "Nessuna delle precedenti"], correct: 1 },
-            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi", "Eccesso di rumore notturno", "Afflusso eccessivo di turisti", "Mancanza di parcheggi per i clienti", "Nessuna delle precedenti"], correct: 4 }, // Negozi chiusi
-            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi", "Pavimentazione troppo scura", "Mancanza di illuminazione radente", "Sconnessi, pericolosi e sporchi", "Nessuna delle precedenti"], correct: 3 },
-            { id: 5, q: "Zona critica per parcheggio causa sport serali?", options: ["Bordighera Alta", "Corso Europa", "Arziglia", "Zona Porto", "Nessuna delle precedenti"], correct: 4 }, // Via Pasteur
+            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi", "Eccesso di rumore notturno", "Negozi chiusi / Vetrine vuote", "Afflusso eccessivo di turisti", "Nessuna delle precedenti"], correct: 2 },
+            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi", "Pavimentazione troppo scura", "Sconnessi, pericolosi e sporchi", "Mancanza di illuminazione", "Nessuna delle precedenti"], correct: 2 },
+            { id: 5, q: "Zona critica per parcheggio causa sport serali?", options: ["Via Pasteur / Piazza Morlotti", "Bordighera Alta", "Corso Europa", "Zona Porto", "Nessuna delle precedenti"], correct: 0 },
             { id: 6, q: "Potenziale sede per un centro culturale annuale?", options: ["Palazzo del Parco", "Mercato Coperto", "Ex Cinema Olimpia", "Sede dei Vigili", "Nessuna delle precedenti"], correct: 0 },
-            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "La pineta del Capo", "Il clima mite e il paesaggio", "La scogliera di Sant'Ampelio", "Nessuna delle precedenti"], correct: 2 },
-            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni scarse", "Orari dei pasti", "Costo troppo elevato", "Mancanza opzioni per celiaci", "Nessuna delle precedenti"], correct: 4 }, // Qualità/Massimo ribasso
-            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi rallentatori", "Più telecamere di sicurezza", "Rifacimento totale asfalto", "Migliore illuminazione pubblica", "Nessuna delle precedenti"], correct: 3 },
+            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "Il clima mite e il paesaggio", "La pineta del Capo", "La scogliera di Sant'Ampelio", "Nessuna delle precedenti"], correct: 1 },
+            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni scarse", "Orari dei pasti", "Costo troppo elevato", "Qualità del cibo (Gara al massimo ribasso)", "Nessuna delle precedenti"], correct: 3 },
+            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi rallentatori", "Più telecamere di sicurezza", "Migliore illuminazione pubblica", "Rifacimento totale asfalto", "Nessuna delle precedenti"], correct: 2 },
             { id: 10, q: "Cosa si propone per incentivare l'uso della bicicletta?", options: ["Noleggio bici comunale economico", "Piste ciclabili in ogni via", "Rastrelliere videosorvegliate", "ZTL totale nel weekend", "Nessuna delle precedenti"], correct: 0 },
-            { id: 11, q: "Cosa chiedono i residenti riguardo ai Vigili Urbani?", options: ["Meno multe per divieto", "Presenza fisica a piedi e marciapiedi", "Più pattuglie in auto civetta", "Più uffici informativi", "Nessuna delle precedenti"], correct: 1 },
-            { id: 12, q: "Quale eccellenza culturale è citata per l'importanza educativa?", options: ["Teatro della Concordia", "Il Museo Bicknell", "Villa Regina Margherita", "La Biblioteca Civica", "Nessuna delle precedenti"], correct: 3 },
-            { id: 13, q: "Cosa suggeriscono per i parcheggi in centro oltre alla superficie?", options: ["Eliminare tutte le strisce blu", "Bus navetta da Ventimiglia", "Permessi solo ai residenti", "Nuovi silos fuori città", "Nessuna delle precedenti"], correct: 4 }, // Sotterranei
+            { id: 11, q: "Cosa chiedono i residenti riguardo ai Vigili Urbani?", options: ["Meno multe per divieto", "Presenza fisica a piedi e marciapiedi", "Più pattuglie in auto", "Più uffici informativi", "Nessuna delle precedenti"], correct: 1 },
+            { id: 12, q: "Quale eccellenza culturale è citata per l'importanza educativa?", options: ["Teatro della Concordia", "Il Museo Bicknell", "La Biblioteca Civica", "Villa Regina Margherita", "Nessuna delle precedenti"], correct: 2 },
+            { id: 13, q: "Cosa suggeriscono per i parcheggi in centro oltre alla superficie?", options: ["Eliminare tutte le strisce blu", "Costruzione parcheggi sotterranei", "Bus navetta gratuito", "Permessi solo ai residenti", "Nessuna delle precedenti"], correct: 1 },
             { id: 14, q: "Quale sentimento prevale sul declino della città?", options: ["Rabbia e aggressività", "Indifferenza totale", "Tristezza e malinconia", "Speranza immediata", "Nessuna delle precedenti"], correct: 2 },
-            { id: 15, q: "Iniziativa proposta per aiutare le famiglie in difficoltà?", options: ["Bonus spesa mensili", "Nuovi asili nido privati", "Esonero totale tasse comunali", "Supporto scolastico privato", "Nessuna delle precedenti"], correct: 4 }, // Ascolto servizi sociali
-            { id: 16, q: "Che tipo di turismo si vorrebbe incentivare oltre al balneare?", options: ["Turismo crocieristico", "Turismo d'affari e fiere", "Parchi a tema stile Disney", "Culturale, sportivo e invernale", "Nessuna delle precedenti"], correct: 3 },
-            { id: 17, q: "Quale elemento del lungomare è considerato 'inviolabile'?", options: ["Le panchine in ghisa", "Il muraglione in pietra", "La rotonda di Sant'Ampelio", "I chioschi storici", "Nessuna delle precedenti"], correct: 4 }, // Araucarie
+            { id: 15, q: "Iniziativa proposta per aiutare le famiglie in difficoltà?", options: ["Bonus spesa mensili", "Nuovi asili nido privati", "Ascolto servizi sociali e supporto bambini", "Esonero totale tasse comunali", "Nessuna delle precedenti"], correct: 2 },
+            { id: 16, q: "Che tipo di turismo si vorrebbe incentivare oltre al balneare?", options: ["Turismo crocieristico", "Culturale, sportivo e invernale", "Turismo d'affari", "Parchi a tema", "Nessuna delle precedenti"], correct: 1 },
+            { id: 17, q: "Quale elemento del lungomare è considerato 'inviolabile'?", options: ["Araucarie storiche", "Le panchine in ghisa", "Il muraglione in pietra", "La rotonda di Sant'Ampelio", "Nessuna delle precedenti"], correct: 0 },
             { id: 18, q: "Cosa si suggerisce per contrastare l'accattonaggio molesto?", options: ["Maggiore controllo delle forze dell'ordine", "Zone interdette ai non residenti", "Aiuti economici diretti", "Campagna social dedicata", "Nessuna delle precedenti"], correct: 0 },
-            { id: 19, q: "Quale termine usano i cittadini per descrivere l'attuale gestione?", options: ["Poca preparazione tecnica", "Mancanza di ascolto e arroganza", "Troppa burocrazia digitale", "Mancanza di fondi europei", "Nessuna delle precedenti"], correct: 1 },
-            { id: 20, q: "Obiettivo principale di un programma per il domani?", options: ["Eventi ogni sabato sera", "Rifare solo l'asfalto", "Spostare il comune a Bordighera Alta", "Abbassare l'età dei consiglieri", "Nessuna delle precedenti"], correct: 4 } // Visione lungo termine
+            { id: 19, q: "Quale termine usano i cittadini per descrivere l'attuale gestione?", options: ["Poca preparazione tecnica", "Mancanza di ascolto e arroganza", "Troppa burocrazia digitale", "Mancanza di fondi", "Nessuna delle precedenti"], correct: 1 },
+            { id: 20, q: "Obiettivo principale di un programma per il domani?", options: ["Eventi ogni sabato sera", "Obiettivi chiari a breve, medio e lungo termine", "Rifare solo l'asfalto", "Abbassare l'età dei consiglieri", "Nessuna delle precedenti"], correct: 1 }
         ];
 
         const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -81,12 +76,7 @@
                 shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>,
                 logout: <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>,
                 trash: <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/>,
-                settings: (
-                    <React.Fragment>
-                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </React.Fragment>
-                ),
+                settings: <React.Fragment><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></React.Fragment>,
                 volume: <path d="M11 5 6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>,
                 volumeX: <path d="M11 5 6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
             };
@@ -112,58 +102,20 @@
             const audioCtxRef = useRef(null);
             const dbRef = useRef(null);
 
-            // Inizializzazione Firebase
-            useEffect(() => {
-                try {
-                    const config = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-                    const id = typeof __app_id !== 'undefined' ? __app_id : 'bordighera-domani-quiz';
-
-                    if (config && fb) {
-                        const app = fb.initializeApp(config);
-                        const auth = fb.getAuth(app);
-                        dbRef.current = fb.getFirestore(app);
-
-                        const initAuth = async () => {
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                await fb.signInWithCustomToken(auth, __initial_auth_token);
-                            } else {
-                                await fb.signInAnonymously(auth);
-                            }
-                        };
-                        initAuth();
-
-                        fb.onAuthStateChanged(auth, (u) => {
-                            setUser(u);
-                            if (u && localStorage.getItem('bordi_quiz_played') && view === 'register') {
-                                setView('leaderboard');
-                            }
-                        });
-                    }
-                } catch (e) {
-                    console.error("Firebase Init Fail", e);
+            // Audio Context Getter - Robust 
+            const getAudioCtx = async () => {
+                if (!audioCtxRef.current) {
+                    audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
                 }
-            }, []);
-
-            // Listener Leaderboard
-            useEffect(() => {
-                if (!user || !dbRef.current) return;
-                const id = typeof __app_id !== 'undefined' ? __app_id : 'bordighera-domani-quiz';
-                
-                const q = fb.query(fb.collection(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard'));
-                const unsubscribe = fb.onSnapshot(q, (snapshot) => {
-                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setLeaderboard(data.sort((a, b) => b.score - a.score));
-                }, (err) => console.error("Firestore error", err));
-
-                return () => unsubscribe();
-            }, [user]);
+                if (audioCtxRef.current.state === "suspended") {
+                    await audioCtxRef.current.resume();
+                }
+                return audioCtxRef.current;
+            };
 
             const triggerSound = async (type) => {
                 if (!soundEnabled) return;
-                if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtxRef.current.state === "suspended") await audioCtxRef.current.resume();
-                
-                const ctx = audioCtxRef.current;
+                const ctx = await getAudioCtx();
                 const masterGain = ctx.createGain();
                 masterGain.gain.value = 0.08;
                 masterGain.connect(ctx.destination);
@@ -182,16 +134,61 @@
 
                 switch(type) {
                     case 'start': playNote(261, 0, 0.1); playNote(329, 0.1, 0.1); playNote(392, 0.2, 0.3); break;
-                    case 'correct': playNote(523, 0, 0.1); playNote(659, 0.1, 0.2); break;
-                    case 'wrong': playNote(220, 0, 0.1); playNote(180, 0.1, 0.3); break;
-                    case 'finish': [523, 659, 783, 1046].forEach((f, i) => playNote(f, i * 0.1, 0.4, 'triangle')); break;
                     case 'select': playNote(600, 0, 0.05, 'sine'); break;
+                    case 'finish': [523, 659, 783, 1046].forEach((f, i) => playNote(f, i * 0.1, 0.4, 'triangle')); break;
                 }
             };
 
+            // Polling per caricamento Firebase
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    if (window.fb) {
+                        clearInterval(interval);
+                        initFirebase();
+                    }
+                }, 100);
+                return () => clearInterval(interval);
+            }, []);
+
+            const initFirebase = async () => {
+                const config = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+                const FB = window.fb;
+                if (!config || !FB) return;
+
+                const app = FB.initializeApp(config);
+                const auth = FB.getAuth(app);
+                dbRef.current = FB.getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await FB.signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await FB.signInAnonymously(auth);
+                }
+
+                FB.onAuthStateChanged(auth, (u) => {
+                    setUser(u);
+                    if (u && localStorage.getItem('bordi_quiz_played') && view === 'register') setView('leaderboard');
+                });
+            };
+
+            // Listener Leaderboard (Centralizzato)
+            useEffect(() => {
+                const FB = window.fb;
+                if (!user || !dbRef.current || !FB) return;
+                const id = typeof __app_id !== 'undefined' ? __app_id : 'bordighera-domani-quiz';
+                
+                // Fetch semplice + ordinamento in memoria per stabilità totale
+                const q = FB.query(FB.collection(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard'));
+                const unsubscribe = FB.onSnapshot(q, (snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setLeaderboard(data.sort((a, b) => b.score - a.score));
+                });
+                return () => unsubscribe();
+            }, [user]);
+
             const handleAnswer = (idx) => {
+                triggerSound('select');
                 const isCorrect = idx === quizData[currentQuestion].correct;
-                triggerSound(isCorrect ? 'correct' : 'wrong');
                 const newScore = isCorrect ? score + 1 : score;
                 setScore(newScore);
                 
@@ -203,23 +200,27 @@
             };
 
             const finishQuiz = async (finalScore) => {
-                triggerSound('finish');
+                const FB = window.fb;
                 const id = typeof __app_id !== 'undefined' ? __app_id : 'bordighera-domani-quiz';
-                if (user && dbRef.current) {
-                    await fb.addDoc(fb.collection(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard'), {
+                if (user && dbRef.current && FB) {
+                    await FB.addDoc(FB.collection(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard'), {
                         name: playerName,
                         score: finalScore,
-                        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        ts: Date.now()
                     });
                 }
+                triggerSound('finish');
                 localStorage.setItem('bordi_quiz_played', 'true');
                 setView('results');
             };
 
             const deleteEntry = async (docId) => {
+                const FB = window.fb;
                 const id = typeof __app_id !== 'undefined' ? __app_id : 'bordighera-domani-quiz';
-                triggerSound('wrong');
-                await fb.deleteDoc(fb.doc(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard', docId));
+                if (FB && dbRef.current) {
+                    await FB.deleteDoc(FB.doc(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard', docId));
+                }
                 localStorage.removeItem('bordi_quiz_played');
             };
 
@@ -231,25 +232,25 @@
 
             return (
                 <div className="min-h-screen flex flex-col items-center justify-center p-4">
-                    <button onClick={() => setSoundEnabled(!soundEnabled)} className="fixed top-4 left-4 p-3 bg-white shadow-md rounded-full text-slate-400 z-50">
+                    <button onClick={() => setSoundEnabled(!soundEnabled)} className="fixed top-4 left-4 p-3 bg-white shadow-md rounded-full text-slate-400 z-50 transition-all active:scale-90">
                         <Icon name={soundEnabled ? "volume" : "volumeX"} />
                     </button>
 
                     {view === 'register' && (
                         <div className="max-w-sm w-full text-center animate-quiz relative">
-                            <button onClick={() => setView('leaderboard')} className="absolute -top-12 -right-4 p-2 text-slate-300 hover:text-blue-500"><Icon name="settings" /></button>
+                            <button onClick={() => { triggerSound('select'); setView('leaderboard'); }} className="absolute -top-12 -right-4 p-2 text-slate-300 hover:text-blue-500"><Icon name="settings" /></button>
                             <img src={LOGO_URL} className="w-32 h-32 mx-auto mb-6 drop-shadow-lg" alt="logo" />
                             <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter uppercase">Bordighera Domani</h1>
-                            <p className="text-slate-600 mb-8 font-medium italic">"Conosci davvero il Mugugno cittadino?"</p>
-                            <input type="text" placeholder="Nome e Cognome del Candidato" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none font-bold" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
+                            <p className="text-slate-600 mb-8 font-medium italic">"Il mugugno è la nostra forza."</p>
+                            <input type="text" placeholder="Nome e Cognome del Candidato" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none font-bold text-center" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
                             <button onClick={() => playerName.length > 3 && (triggerSound('start'), setView('quiz'))} disabled={playerName.length <= 3} className="arcade-btn w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg">Inizia il Test</button>
                         </div>
                     )}
 
                     {view === 'quiz' && (
                         <div className="max-w-2xl w-full animate-quiz">
-                            <div className="flex justify-between items-center mb-6">
-                                <span className="text-xs font-black text-blue-900 uppercase">Analisi Criticità {currentQuestion + 1}/20</span>
+                            <div className="flex justify-between items-center mb-6 px-1">
+                                <span className="text-xs font-black text-blue-900 uppercase tracking-widest">Domanda {currentQuestion + 1}/20</span>
                                 <span className="text-[10px] font-black text-slate-300 uppercase italic">Punteggio Secretato</span>
                             </div>
                             <div className="w-full bg-slate-200 h-2 rounded-full mb-8 overflow-hidden">
@@ -258,8 +259,8 @@
                             <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-8 leading-tight">{quizData[currentQuestion].q}</h2>
                             <div className="grid gap-3">
                                 {quizData[currentQuestion].options.map((opt, idx) => (
-                                    <button key={idx} onClick={() => handleAnswer(idx)} className="arcade-btn w-full p-4 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 flex justify-between items-center group shadow-sm">
-                                        <span className="font-medium text-slate-700 group-hover:text-blue-700">{opt}</span>
+                                    <button key={idx} onClick={() => handleAnswer(idx)} className="arcade-btn w-full p-4 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 flex justify-between items-center group shadow-sm transition-all">
+                                        <span className="font-medium text-slate-700 group-hover:text-blue-700 leading-snug">{opt}</span>
                                         <Icon name="chevron" className="text-slate-300" />
                                     </button>
                                 ))}
@@ -271,12 +272,12 @@
                         <div className="max-w-sm w-full text-center animate-quiz">
                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><Icon name="check" className="w-10 h-10 text-green-600" /></div>
                             <h2 className="text-2xl font-bold text-slate-800 mb-2 uppercase">Test Acquisito</h2>
-                            <p className="text-slate-600 mb-8 leading-relaxed italic">"Ottimo lavoro {playerName}, i tuoi dati sono stati salvati nel Cloud."</p>
+                            <p className="text-slate-600 mb-8 leading-relaxed italic">"Ottimo lavoro {playerName.split(' ')[0]}, i tuoi dati sono stati sincronizzati nel Cloud."</p>
                             <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700 shadow-inner">
                                 <Icon name="eyeOff" className="mx-auto mb-2 text-slate-600 w-8 h-8" />
                                 <p className="text-xs font-black text-slate-300 tracking-widest uppercase">Punteggio Secretato</p>
                             </div>
-                            <button onClick={() => setView('leaderboard')} className="arcade-btn w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center">
+                            <button onClick={() => { triggerSound('select'); setView('leaderboard'); }} className="arcade-btn w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center">
                                 <Icon name="lock" className="w-4 h-4 mr-2" /> Archivio Cloud
                             </button>
                         </div>
@@ -286,9 +287,10 @@
                         <div className="max-w-md w-full animate-quiz">
                             {!isUnlocked ? (
                                 <div className="text-center py-8">
-                                    <h2 className="text-xl font-bold mb-6 text-slate-800 uppercase">Login Amministrazione</h2>
-                                    <input type="password" placeholder="Passcode" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center text-xl tracking-widest font-mono" value={passInput} onChange={(e) => setPassInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && checkPassword()} />
-                                    {errorMsg && <p className="text-red-500 text-xs mb-4 font-bold">{errorMsg}</p>}
+                                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6"><Icon name="shield" className="w-8 h-8 text-blue-600" /></div>
+                                    <h2 className="text-xl font-bold mb-6 text-slate-800 uppercase tracking-tight">Accesso Riservato</h2>
+                                    <input type="password" placeholder="Passcode Amministratore" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center text-xl tracking-widest font-mono shadow-inner" value={passInput} onChange={(e) => setPassInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && checkPassword()} />
+                                    {errorMsg && <p className="text-red-500 text-xs mb-4 font-bold tracking-tight">{errorMsg}</p>}
                                     <div className="flex gap-2">
                                         <button onClick={() => setView('register')} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">Esci</button>
                                         <button onClick={checkPassword} className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl">Sblocca</button>
@@ -298,7 +300,7 @@
                                 <div>
                                     <div className="flex justify-between items-end mb-8">
                                         <div>
-                                            <h2 className="text-2xl font-black text-blue-900 uppercase leading-none">Graduatoria Cloud</h2>
+                                            <h2 className="text-2xl font-black text-blue-900 uppercase leading-none tracking-tighter">Graduatoria</h2>
                                             <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Dati Candidati Sincronizzati</p>
                                         </div>
                                         <div className="flex gap-2">
@@ -308,7 +310,7 @@
                                     </div>
                                     <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 max-h-[60vh] overflow-y-auto custom-scroll">
                                         {leaderboard.map((entry, idx) => (
-                                            <div key={entry.id} className="flex items-center justify-between p-5 border-b border-slate-50 last:border-0">
+                                            <div key={entry.id} className="flex items-center justify-between p-5 border-b border-slate-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                                                 <div className="flex items-center space-x-4">
                                                     <span className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black ${idx === 0 ? 'bg-yellow-400 text-white' : idx === 1 ? 'bg-slate-300 text-white' : idx === 2 ? 'bg-orange-300 text-white' : 'bg-slate-100 text-slate-400'}`}>{idx+1}</span>
                                                     <div>
