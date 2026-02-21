@@ -15,7 +15,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React & Babel for Browser Transpilation -->
+    <!-- React & Babel -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -24,45 +24,77 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        .perspective-1000 { perspective: 1000px; }
-        .backface-hidden { backface-visibility: hidden; }
-        .transform-style-3d { transform-style: preserve-3d; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-        
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .animate-quiz { animation: fadeIn 0.4s ease-out forwards; }
+        .logo-container { background: white; padding: 8px; }
+        .no-select { user-select: none; }
+        
+        /* Fix per evitare il conflitto tra React e Lucide replace */
+        .icon-wrapper i {
+            display: inline-block;
+            vertical-align: middle;
+        }
     </style>
 </head>
-<body class="bg-slate-50 font-sans">
+<body class="bg-slate-50 font-sans no-select">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useRef } = React;
 
-        // Configurazione
         const LOGO_URL = "https://github.com/riviera-code/quizmugugno/blob/main/Bordighera-domani.png?raw=true"; 
         const SECRET_PASSWORD = "BordigheraDomani2026";
 
         const quizData = [
-            { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Mancanza di cestini per le deiezioni canine", "Inefficienza del sistema a tessere e scomodità raccolta", "Costo eccessivo della bolletta TARI", "Mancanza di personale per lo spazzamento"], correct: 1 },
-            { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["Più stabilimenti balneari privati", "Nuovi parcheggi sotterranei sulla spiaggia", "La pedonalizzazione completa", "L'installazione di un parco giochi"], correct: 2 },
-            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi che attirano catene", "Eccesso di rumore notturno", "Troppi negozi chiusi e vetrine vuote", "Mancanza di aree di carico e scarico"], correct: 2 },
-            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi e tolgono spazio alle auto", "Sconnessi, pericolosi e sporchi", "Mancanza di rampe per disabili ovunque", "Colore della pavimentazione inadatto"], correct: 1 },
+            { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Mancanza di cestini", "Inefficienza sistema tessere e scomodità", "Costo eccessivo TARI", "Mancanza di spazzamento"], correct: 1 },
+            { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["Più stabilimenti privati", "Nuovi parcheggi sulla spiaggia", "La pedonalizzazione completa", "Più giochi per bambini"], correct: 2 },
+            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi", "Eccesso di rumore", "Troppi negozi chiusi e vetrine vuote", "Mancanza di scarico merci"], correct: 2 },
+            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi", "Sconnessi, pericolosi e sporchi", "Mancanza di rampe", "Colore pavimentazione"], correct: 1 },
             { id: 5, q: "Zona critica per parcheggio causa sport serali?", options: ["Bordighera Alta", "Corso Europa", "Via Pasteur e Piazza Morlotti", "Arziglia"], correct: 2 },
             { id: 6, q: "Potenziale sede per un centro culturale annuale?", options: ["Mercato Coperto", "Palazzo del Parco", "Ex Cinema Olimpia", "Sede dei Vigili"], correct: 1 },
-            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "Il sentiero del Beodo", "Il clima mite e il paesaggio naturale", "Il porto turistico"], correct: 2 },
-            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni troppo abbondanti", "Scarsa qualità del cibo (massimo ribasso)", "Orari dei pasti troppo anticipati", "Mancanza di opzioni vegetariane"], correct: 1 },
-            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi artificiali", "Migliore illuminazione pubblica", "Più telecamere di velocità", "Rifacimento dei sottoservizi"], correct: 1 },
-            { id: 10, q: "Cosa desiderano i giovani per contrastare la 'città morta'?", options: ["Più biblioteche silenziose", "Spazi di aggregazione e locali per musica", "Nuovi campi da bocce", "Un centro commerciale"], correct: 1 }
+            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "Il sentiero del Beodo", "Il clima mite e il paesaggio", "Il porto turistico"], correct: 2 },
+            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni abbondanti", "Scarsa qualità (massimo ribasso)", "Orari dei pasti", "Mancanza opzioni bio"], correct: 1 },
+            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi", "Migliore illuminazione pubblica", "Più telecamere", "Rifacimento asfalto"], correct: 1 },
+            { id: 10, q: "Cosa si propone per incentivare l'uso della bicicletta?", options: ["Più piste ciclabili alte", "Noleggio bici comunale economico", "Rastrelliere ovunque", "ZTL per le auto"], correct: 1 },
+            { id: 11, q: "Cosa chiedono i residenti riguardo ai Vigili Urbani?", options: ["Più pattuglie in auto", "Presenza fisica sui marciapiedi e a piedi", "Meno multe per divieto", "Più uffici aperti"], correct: 1 },
+            { id: 12, q: "Quale eccellenza culturale è citata per l'importanza educativa?", options: ["Teatro della Concordia", "La Biblioteca Civica", "Il Museo Bicknell", "Villa Regina Margherita"], correct: 1 },
+            { id: 13, q: "Cosa suggeriscono per i parcheggi in centro oltre alla superficie?", options: ["Eliminare le strisce blu", "Costruzione di parcheggi sotterranei", "Bus navetta gratuito", "Permessi solo ai residenti"], correct: 1 },
+            { id: 14, q: "Quale sentimento prevale sul declino della città?", options: ["Rabbia e aggressività", "Tristezza e malinconia", "Indifferenza totale", "Speranza immediata"], correct: 1 },
+            { id: 15, q: "Iniziativa proposta per aiutare le famiglie in difficoltà?", options: ["Bonus spesa mensili", "Ascolto servizi sociali e supporto bambini", "Nuovi asili nido privati", "Esonero tasse comunali"], correct: 1 },
+            { id: 16, q: "Che tipo di turismo si vorrebbe incentivare oltre al balneare?", options: ["Turismo crocieristico", "Culturale, sportivo e invernale", "Turismo d'affari", "Parchi a tema"], correct: 1 },
+            { id: 17, q: "Quale elemento del lungomare è considerato 'inviolabile'?", options: ["Il muraglione", "Le Araucarie storiche", "La rotonda di Sant'Ampelio", "I chioschi storici"], correct: 1 },
+            { id: 18, q: "Cosa si suggerisce per contrastare l'accattonaggio molesto?", options: ["Zone interdette ai non residenti", "Maggiore controllo delle forze dell'ordine", "Aiuti economici diretti", "Campagna di sensibilizzazione"], correct: 1 },
+            { id: 19, q: "Quale termine usano i cittadini per descrivere l'attuale gestione?", options: ["Poca lungimiranza", "Mancanza di ascolto e arroganza", "Troppa burocrazia", "Mancanza di fondi"], correct: 1 },
+            { id: 20, q: "Obiettivo principale di un programma per il domani?", options: ["Fare eventi ogni weekend", "Visione con obiettivi chiari a breve/medio/lungo termine", "Riparare solo le buche", "Abbassare l'età dei consiglieri"], correct: 1 }
         ];
 
-        const LogoBordighera = ({ className = "w-24 h-24" }) => {
-            return <img src={LOGO_URL} alt="Logo" className={`${className} object-contain rounded-full shadow-md mx-auto`} />;
-        };
+        const LogoBordighera = ({ className = "w-24 h-24" }) => (
+            <div className={`${className} mx-auto logo-container rounded-full shadow-md flex items-center justify-center overflow-hidden bg-white`}>
+                <img src={LOGO_URL} alt="Logo" className="w-full h-full object-contain scale-110" />
+            </div>
+        );
 
-        const Icon = ({ name, ...props }) => {
-            useEffect(() => { lucide.createIcons(); });
-            return <i data-lucide={name} {...props}></i>;
+        // Icon component modificato per evitare errori NotFoundError (removeChild)
+        const Icon = ({ name, className = "w-5 h-5" }) => {
+            const iconRef = useRef(null);
+
+            useEffect(() => {
+                if (iconRef.current) {
+                    // Usiamo un contenitore stabile e lasciamo che lucide faccia il suo lavoro una volta sola
+                    lucide.createIcons({
+                        attrs: {
+                            class: className
+                        },
+                        nameAttr: 'data-lucide'
+                    });
+                }
+            }, [name]);
+
+            return (
+                <span className="icon-wrapper inline-flex items-center justify-center">
+                    <i key={name} data-lucide={name} ref={iconRef}></i>
+                </span>
+            );
         };
 
         function App() {
@@ -78,12 +110,17 @@
             useEffect(() => {
                 const saved = JSON.parse(localStorage.getItem('bordi_leaderboard') || '[]');
                 setLocalLeaderboard(saved);
-                if (localStorage.getItem('bordi_quiz_played') && !isUnlocked) setView('leaderboard');
+                const hasPlayed = localStorage.getItem('bordi_quiz_played');
+                if (hasPlayed && !isUnlocked && view !== 'results') setView('leaderboard');
             }, [isUnlocked]);
 
             const finishQuiz = (finalScore) => {
-                const newEntry = { name: playerName, score: finalScore, date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-                const updated = [...localLeaderboard, newEntry].sort((a, b) => b.score - a.score).slice(0, 50);
+                const newEntry = { 
+                    name: playerName, 
+                    score: finalScore, 
+                    date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                };
+                const updated = [...localLeaderboard, newEntry].sort((a, b) => b.score - a.score);
                 setLocalLeaderboard(updated);
                 localStorage.setItem('bordi_leaderboard', JSON.stringify(updated));
                 localStorage.setItem('bordi_quiz_played', 'true');
@@ -94,13 +131,22 @@
                 const isCorrect = idx === quizData[currentQuestion].correct;
                 const newScore = isCorrect ? score + 1 : score;
                 setScore(newScore);
-                if (currentQuestion < quizData.length - 1) setCurrentQuestion(currentQuestion + 1);
-                else finishQuiz(newScore);
+                
+                if (currentQuestion < quizData.length - 1) {
+                    setCurrentQuestion(currentQuestion + 1);
+                } else {
+                    finishQuiz(newScore);
+                }
             };
 
             const checkPassword = () => {
-                if (passInput === SECRET_PASSWORD) { setIsUnlocked(true); setErrorMsg(''); }
-                else { setErrorMsg('Codice errato.'); setPassInput(''); }
+                if (passInput === SECRET_PASSWORD) { 
+                    setIsUnlocked(true); 
+                    setErrorMsg(''); 
+                } else { 
+                    setErrorMsg('Codice errato.'); 
+                    setPassInput(''); 
+                }
             };
 
             return (
@@ -108,13 +154,13 @@
                     {view === 'register' && (
                         <div className="max-w-sm w-full text-center animate-quiz">
                             <LogoBordighera className="w-32 h-32 mb-6" />
-                            <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter">BORDIGHERA DOMANI</h1>
+                            <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter uppercase">Bordighera Domani</h1>
                             <div className="h-1 w-16 bg-blue-600 mx-auto mb-4 rounded-full"></div>
-                            <p className="text-slate-600 mb-8 font-medium italic italic">"Conosci davvero il Mugugno cittadino?"</p>
+                            <p className="text-slate-600 mb-8 font-medium italic">"Conosci davvero il Mugugno cittadino?"</p>
                             <input 
                                 type="text" 
                                 placeholder="Nome del Candidato" 
-                                className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none shadow-sm"
+                                className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none shadow-sm font-bold"
                                 value={playerName}
                                 onChange={(e) => setPlayerName(e.target.value)}
                             />
@@ -125,28 +171,31 @@
                             >
                                 Inizia il Test
                             </button>
-                            <p className="mt-8 text-[10px] text-slate-400 uppercase font-bold">Area Riservata Lista Civica</p>
+                            <p className="mt-8 text-[10px] text-slate-400 uppercase font-bold tracking-widest">Area Riservata Candidati</p>
                         </div>
                     )}
 
                     {view === 'quiz' && (
                         <div className="max-w-2xl w-full animate-quiz">
                             <div className="flex justify-between items-center mb-6">
-                                <span className="text-xs font-black text-blue-900 uppercase">Domanda {currentQuestion + 1}/10</span>
-                                <span className="text-xs font-bold text-slate-400">Punti: {score}</span>
+                                <div className="flex items-center space-x-3">
+                                    <img src={LOGO_URL} className="w-8 h-8 object-contain" alt="mini logo" />
+                                    <span className="text-xs font-black text-blue-900 uppercase tracking-widest">Analisi Criticità {currentQuestion + 1}/{quizData.length}</span>
+                                </div>
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">Punteggio Secretato</span>
                             </div>
-                            <div className="w-full bg-slate-200 h-2 rounded-full mb-8">
-                                <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${((currentQuestion + 1)/10)*100}%`}}></div>
+                            <div className="w-full bg-slate-200 h-2 rounded-full mb-8 overflow-hidden">
+                                <div className="h-full bg-blue-600 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(37,99,235,0.5)]" style={{ width: `${((currentQuestion + 1)/quizData.length)*100}%`}}></div>
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-8">{quizData[currentQuestion].q}</h2>
-                            <div className="space-y-3">
+                            <h2 className="text-2xl font-bold text-slate-800 mb-8 leading-tight">{quizData[currentQuestion].q}</h2>
+                            <div className="grid gap-3">
                                 {quizData[currentQuestion].options.map((opt, idx) => (
                                     <button 
                                         key={idx} 
                                         onClick={() => handleAnswer(idx)}
-                                        className="w-full p-5 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all flex justify-between items-center group"
+                                        className="w-full p-5 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all flex justify-between items-center group shadow-sm"
                                     >
-                                        <span className="font-medium text-slate-700 group-hover:text-blue-700">{opt}</span>
+                                        <span className="font-medium text-slate-700 group-hover:text-blue-700 leading-snug">{opt}</span>
                                         <Icon name="chevron-right" className="text-slate-300 group-hover:text-blue-500 w-5 h-5" />
                                     </button>
                                 ))}
@@ -156,16 +205,17 @@
 
                     {view === 'results' && (
                         <div className="max-w-sm w-full text-center animate-quiz">
-                            <LogoBordighera className="w-20 h-20 mb-6" />
-                            <div className="text-5xl font-black text-blue-900 mb-4">{score}/10</div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Test Completato</h2>
-                            <p className="text-slate-600 mb-8">Grazie <strong>{playerName}</strong>. Il tuo contributo è stato archiviato.</p>
-                            <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700">
+                            <LogoBordighera className="w-24 h-24 mb-6" />
+                            <Icon name="check-circle" className="w-16 h-16 mx-auto mb-4 text-green-500" />
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2 uppercase">Test Completato</h2>
+                            <p className="text-slate-600 mb-8 leading-relaxed">Grazie <strong>{playerName}</strong>.<br/>Il tuo livello di conoscenza del mugugno è stato archiviato correttamente.</p>
+                            <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700 shadow-inner">
                                 <Icon name="eye-off" className="mx-auto mb-2 text-slate-600 w-8 h-8" />
-                                <p className="text-sm text-slate-300">CLASSIFICA SECRETATA</p>
+                                <p className="text-xs font-black text-slate-300 tracking-widest">RISULTATO SECRETATO</p>
+                                <p className="text-[10px] text-slate-500 mt-2 uppercase">Solo l'amministratore può sbloccare i dati</p>
                             </div>
-                            <button onClick={() => setView('leaderboard')} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg">
-                                Sblocca Archivio
+                            <button onClick={() => setView('leaderboard')} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center transition-transform active:scale-95">
+                                <Icon name="lock" className="w-4 h-4 mr-2 text-white" /> Sblocca Archivio
                             </button>
                         </div>
                     )}
@@ -174,39 +224,53 @@
                         <div className="max-w-md w-full animate-quiz">
                             {!isUnlocked ? (
                                 <div className="text-center py-8">
-                                    <Icon name="lock" className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                                    <h2 className="text-xl font-bold mb-6">Area Protetta Amministratore</h2>
+                                    <LogoBordighera className="w-20 h-20 mb-6 opacity-50" />
+                                    <Icon name="shield-check" className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+                                    <h2 className="text-xl font-bold mb-6 text-slate-800">Area Protetta Amministrazione</h2>
                                     <input 
                                         type="password" 
-                                        placeholder="Codice Segreto" 
-                                        className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center"
+                                        placeholder="Codice Segreto Lista" 
+                                        className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center text-xl tracking-widest font-mono shadow-inner"
                                         value={passInput}
                                         onChange={(e) => setPassInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && checkPassword()}
                                     />
                                     {errorMsg && <p className="text-red-500 text-xs mb-4 font-bold">{errorMsg}</p>}
-                                    <button onClick={checkPassword} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold">Accedi</button>
+                                    <button onClick={checkPassword} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl transition-all active:bg-black">Accedi all'Archivio</button>
                                 </div>
                             ) : (
                                 <div>
-                                    <div className="flex justify-between items-center mb-8">
-                                        <h2 className="text-2xl font-bold text-blue-900">Graduatoria Candidati</h2>
-                                        <button onClick={() => setIsUnlocked(false)} className="text-xs text-slate-400 uppercase font-bold flex items-center">
-                                            <Icon name="key-round" className="w-3 h-3 mr-1" /> Blocca
+                                    <div className="flex justify-between items-end mb-8">
+                                        <div>
+                                            <h2 className="text-2xl font-black text-blue-900 uppercase leading-none">Graduatoria</h2>
+                                            <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-1 italic">Dati Reali - Bordighera Domani</p>
+                                        </div>
+                                        <button onClick={() => setIsUnlocked(false)} className="bg-slate-100 p-2 rounded-xl text-slate-400 hover:text-red-500 transition-colors">
+                                            <Icon name="log-out" className="w-5 h-5 text-slate-500" />
                                         </button>
                                     </div>
-                                    <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+                                    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 max-h-[60vh] overflow-y-auto">
                                         {localLeaderboard.map((entry, idx) => (
-                                            <div key={idx} className="flex items-center justify-between p-5 border-b border-slate-50 last:border-0">
+                                            <div key={idx} className="flex items-center justify-between p-5 border-b border-slate-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                                                 <div className="flex items-center space-x-4">
-                                                    <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold">{idx+1}</span>
+                                                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black ${idx === 0 ? 'bg-yellow-400 text-white' : idx === 1 ? 'bg-slate-300 text-white' : idx === 2 ? 'bg-orange-300 text-white' : 'bg-slate-100 text-slate-400'}`}>{idx+1}</span>
                                                     <div>
-                                                        <p className="font-bold text-slate-800 text-sm uppercase">{entry.name}</p>
-                                                        <p className="text-[10px] text-slate-400">{entry.date}</p>
+                                                        <p className="font-bold text-slate-800 text-sm uppercase leading-none">{entry.name}</p>
+                                                        <p className="text-[10px] text-slate-400 mt-1 font-medium italic">{entry.date}</p>
                                                     </div>
                                                 </div>
-                                                <div className="font-black text-blue-600">{entry.score}/10</div>
+                                                <div className="flex items-baseline space-x-0.5">
+                                                    <span className="text-lg font-black text-blue-600">{entry.score}</span>
+                                                    <span className="text-[10px] font-bold text-slate-300">/20</span>
+                                                </div>
                                             </div>
                                         ))}
+                                        {localLeaderboard.length === 0 && (
+                                            <div className="p-12 text-center text-slate-300 font-medium italic">Nessun dato registrato.</div>
+                                        )}
+                                    </div>
+                                    <div className="mt-6 text-center">
+                                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">Classifica salvata localmente su questo dispositivo</p>
                                     </div>
                                 </div>
                             )}
