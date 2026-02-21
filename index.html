@@ -1,419 +1,223 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Trophy, User, Play, ChevronRight, AlertCircle, CheckCircle2, Medal, History, Lock, KeyRound, EyeOff, Map, Image as ImageIcon } from 'lucide-react';
-
-// --- CONFIGURAZIONE ---
-// Inserisci qui l'URL del tuo logo PNG
-const LOGO_URL = "https://github.com/riviera-code/quizmugugno/blob/main/Bordighera-domani.png?raw=true"; 
-
-const META_DATA = {
-  title: "Quiz del Mugugno - Bordighera Domani 2026",
-  description: "Mettiti alla prova: quanto conosci davvero i problemi e le segnalazioni dei cittadini di Bordighera?",
-  image: "https://images.unsplash.com/photo-1621259182978-f09e5e2ca1ff?q=80&w=1000&auto=format&fit=crop",
-  url: window.location.href
-};
-
-const quizData = [
-  {
-    id: 1,
-    q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?",
-    options: [
-      "Mancanza di cestini per le deiezioni canine",
-      "Inefficienza del sistema a tessere e scomodità raccolta",
-      "Costo eccessivo della bolletta TARI",
-      "Mancanza di personale per lo spazzamento"
-    ],
-    correct: 1
-  },
-  {
-    id: 2,
-    q: "Cosa chiedono i cittadini per il rilancio del lungomare?",
-    options: [
-      "Più stabilimenti balneari privati",
-      "Nuovi parcheggi sotterranei sulla spiaggia",
-      "La pedonalizzazione completa",
-      "L'installazione di un parco giochi"
-    ],
-    correct: 2
-  },
-  {
-    id: 3,
-    q: "Quale problema affligge i locali commerciali del centro?",
-    options: [
-      "Affitti troppo bassi che attirano catene",
-      "Eccesso di rumore notturno",
-      "Troppi negozi chiusi e vetrine vuote",
-      "Mancanza di aree di carico e scarico"
-    ],
-    correct: 2
-  },
-  {
-    id: 4,
-    q: "Lamentela principale sulla manutenzione marciapiedi?",
-    options: [
-      "Sono troppo larghi e tolgono spazio alle auto",
-      "Sconnessi, pericolosi e sporchi",
-      "Mancanza di rampe per disabili ovunque",
-      "Colore della pavimentazione inadatto"
-    ],
-    correct: 1
-  },
-  {
-    id: 5,
-    q: "Zona critica per parcheggio causa sport serali?",
-    options: [
-      "Bordighera Alta",
-      "Corso Europa",
-      "Via Pasteur e Piazza Morlotti",
-      "Arziglia"
-    ],
-    correct: 2
-  },
-  {
-    id: 6,
-    q: "Potenziale sede per un centro culturale annuale?",
-    options: [
-      "Mercato Coperto",
-      "Palazzo del Parco",
-      "Ex Cinema Olimpia",
-      "Sede dei Vigili"
-    ],
-    correct: 1
-  },
-  {
-    id: 7,
-    q: "L'eccellenza naturale 'intoccabile' di Bordighera?",
-    options: [
-      "Le spiagge di sassi",
-      "Il sentiero del Beodo",
-      "Il clima mite e il paesaggio naturale",
-      "Il porto turistico"
-    ],
-    correct: 2
-  },
-  {
-    id: 8,
-    q: "Critica principale alla mensa scolastica?",
-    options: [
-      "Porzioni troppo abbondanti",
-      "Scarsa qualità del cibo (massimo ribasso)",
-      "Orari dei pasti troppo anticipati",
-      "Mancanza di opzioni vegetariane"
-    ],
-    correct: 1
-  },
-  {
-    id: 9,
-    q: "Cosa chiedono per Via Romana e periferie?",
-    options: [
-      "Nuovi dossi artificiali",
-      "Migliore illuminazione pubblica",
-      "Più telecamere di velocità",
-      "Rifacimento dei sottoservizi"
-    ],
-    correct: 1
-  },
-  {
-    id: 10,
-    q: "Cosa desiderano i giovani per contrastare la 'città morta'?",
-    options: [
-      "Più biblioteche silenziose",
-      "Spazi di aggregazione e locali per musica",
-      "Nuovi campi da bocce",
-      "Un centro commerciale"
-    ],
-    correct: 1
-  }
-];
-
-const SECRET_PASSWORD = "BordigheraDomani2026";
-
-// --- COMPONENTE LOGO PNG ---
-const LogoBordighera = ({ className = "w-24 h-24" }) => {
-  const [imgError, setImgError] = useState(false);
-
-  if (imgError) {
-    return (
-      <div className={`${className} bg-blue-100 rounded-full flex items-center justify-center border-2 border-blue-600 shadow-inner`}>
-        <Trophy className="text-blue-600 w-1/2 h-1/2" />
-      </div>
-    );
-  }
-
-  return (
-    <img 
-      src={LOGO_URL} 
-      alt="Logo Bordighera Domani" 
-      className={`${className} object-contain drop-shadow-md`}
-      onError={() => setImgError(true)}
-    />
-  );
-};
-
-export default function QuizApp() {
-  const [view, setView] = useState('register');
-  const [playerName, setPlayerName] = useState('');
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
-  const [localLeaderboard, setLocalLeaderboard] = useState([]);
-  const [passInput, setPassInput] = useState('');
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-
-  useEffect(() => {
-    document.title = META_DATA.title;
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    const updateMeta = (name, content, isProperty = false) => {
-      let el = document.querySelector(isProperty ? `meta[property="${name}"]` : `meta[name="${name}"]`);
-      if (!el) {
-        el = document.createElement('meta');
-        if (isProperty) el.setAttribute('property', name);
-        else el.setAttribute('name', name);
-        document.head.appendChild(el);
-      }
-      el.setAttribute('content', content);
-    };
-
-    updateMeta('description', META_DATA.description);
-    updateMeta('og:title', META_DATA.title, true);
-    updateMeta('og:description', META_DATA.description, true);
-    updateMeta('og:image', META_DATA.image, true);
-    updateMeta('og:url', META_DATA.url, true);
-
-    const savedLeaderboard = JSON.parse(localStorage.getItem('bordi_leaderboard') || '[]');
-    setLocalLeaderboard(savedLeaderboard);
-
-    const hasPlayed = localStorage.getItem('bordi_quiz_played');
-    if (hasPlayed && !isUnlocked) {
-      setView('leaderboard');
-    }
-  }, [isUnlocked]);
-
-  const startQuiz = () => {
-    if (playerName.trim().length < 2) return;
-    setView('quiz');
-  };
-
-  const handleAnswer = (optionIndex) => {
-    const isCorrect = optionIndex === quizData[currentQuestion].correct;
-    const newScore = isCorrect ? score + 1 : score;
-    setScore(newScore);
-
-    if (currentQuestion < quizData.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      finishQuiz(newScore);
-    }
-  };
-
-  const finishQuiz = (finalScore) => {
-    const newEntry = {
-      name: playerName,
-      score: finalScore,
-      date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
+    <!-- Meta Tag per WhatsApp e Social -->
+    <title>Quiz del Mugugno - Bordighera Domani 2026</title>
+    <meta name="description" content="Mettiti alla prova: quanto conosci davvero i problemi e le segnalazioni dei cittadini di Bordighera?">
+    <meta property="og:title" content="Quiz del Mugugno - Bordighera Domani 2026">
+    <meta property="og:description" content="Mettiti alla prova: quanto conosci davvero i problemi e le segnalazioni dei cittadini di Bordighera?">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1621259182978-f09e5e2ca1ff?q=80&w=1000&auto=format&fit=crop">
+    <meta property="og:type" content="website">
     
-    const updatedLeaderboard = [...localLeaderboard, newEntry]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 50);
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & Babel for Browser Transpilation -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    setLocalLeaderboard(updatedLeaderboard);
-    localStorage.setItem('bordi_leaderboard', JSON.stringify(updatedLeaderboard));
-    localStorage.setItem('bordi_quiz_played', 'true');
-    setView('results');
-  };
-
-  const checkPassword = () => {
-    if (passInput === SECRET_PASSWORD) {
-      setIsUnlocked(true);
-      setErrorMsg('');
-    } else {
-      setErrorMsg('Accesso negato. Password errata.');
-      setPassInput('');
-    }
-  };
-
-  if (view === 'register') {
-    return (
-      <div className="min-h-[600px] flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-        <LogoBordighera className="w-32 h-32 mb-6" />
-        <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter">BORDIGHERA DOMANI</h1>
-        <div className="h-1 w-20 bg-blue-600 mb-4 rounded-full"></div>
-        <p className="text-slate-600 mb-8 max-w-xs font-medium italic italic">"Conosci davvero il Mugugno cittadino?"</p>
+    <style>
+        .perspective-1000 { perspective: 1000px; }
+        .backface-hidden { backface-visibility: hidden; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .rotate-y-180 { transform: rotateY(180deg); }
         
-        <div className="w-full max-w-sm space-y-4">
-          <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Nome del Candidato" 
-              className="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none transition-all shadow-sm"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-            />
-          </div>
-          <button 
-            onClick={startQuiz}
-            disabled={playerName.length < 2}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-200 transition-all flex items-center justify-center"
-          >
-            Inizia il Test <Play className="ml-2 fill-current" size={20} />
-          </button>
-        </div>
-        <p className="mt-8 text-[10px] text-slate-400 uppercase tracking-widest font-bold">Area Riservata Lista Civica</p>
-      </div>
-    );
-  }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-quiz { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans">
+    <div id="root"></div>
 
-  if (view === 'quiz') {
-    const current = quizData[currentQuestion];
-    return (
-      <div className="max-w-2xl mx-auto py-8 px-4 animate-in slide-in-from-right duration-300">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-3">
-            <LogoBordighera className="w-10 h-10" />
-            <span className="text-xs font-black text-blue-900 uppercase">Quiz Candidati</span>
-          </div>
-          <span className="text-xs font-bold text-slate-400">Progresso {currentQuestion + 1}/{quizData.length}</span>
-        </div>
-        
-        <div className="w-full bg-slate-100 h-2 rounded-full mb-8">
-            <div className="h-full bg-blue-600 rounded-full transition-all duration-300" style={{ width: `${((currentQuestion + 1)/quizData.length)*100}%`}}></div>
-        </div>
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
 
-        <h2 className="text-2xl font-bold text-slate-800 mb-8 leading-tight">{current.q}</h2>
-        
-        <div className="space-y-3">
-          {current.options.map((opt, idx) => (
-            <button 
-              key={idx}
-              onClick={() => handleAnswer(idx)}
-              className="w-full p-5 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all group flex items-center justify-between"
-            >
-              <span className="font-medium text-slate-700 group-hover:text-blue-700">{opt}</span>
-              <ChevronRight className="text-slate-300 group-hover:text-blue-500" size={20} />
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
+        // Configurazione
+        const LOGO_URL = "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=200&auto=format&fit=crop"; 
+        const SECRET_PASSWORD = "BordigheraDomani2026";
 
-  if (view === 'results') {
-    return (
-      <div className="max-w-md mx-auto py-12 px-6 text-center animate-in zoom-in duration-500">
-        <LogoBordighera className="w-20 h-20 mx-auto mb-6" />
-        <div className="relative inline-block mb-6">
-          <Medal size={100} className={score > 7 ? "text-yellow-400" : "text-blue-400"} />
-          <div className="absolute inset-0 flex items-center justify-center text-3xl font-black text-white pt-2">
-            {score}
-          </div>
-        </div>
-        
-        <h2 className="text-3xl font-bold text-blue-900 mb-2">Dati Acquisiti</h2>
-        <p className="text-slate-600 mb-8 leading-relaxed">
-          Grazie <strong>{playerName}</strong>.<br/>
-          Il test è terminato. Il tuo posizionamento è stato salvato in archivio.
-        </p>
-        
-        <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700">
-            <EyeOff className="mx-auto mb-3 text-slate-600" size={32} />
-            <p className="text-sm text-slate-300 font-medium">
-              ACCESSO NEGATO<br/>
-              <span className="opacity-60 text-xs">La classifica è protetta da crittografia amministrativa.</span>
-            </p>
-        </div>
+        const quizData = [
+            { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Mancanza di cestini per le deiezioni canine", "Inefficienza del sistema a tessere e scomodità raccolta", "Costo eccessivo della bolletta TARI", "Mancanza di personale per lo spazzamento"], correct: 1 },
+            { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["Più stabilimenti balneari privati", "Nuovi parcheggi sotterranei sulla spiaggia", "La pedonalizzazione completa", "L'installazione di un parco giochi"], correct: 2 },
+            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi che attirano catene", "Eccesso di rumore notturno", "Troppi negozi chiusi e vetrine vuote", "Mancanza di aree di carico e scarico"], correct: 2 },
+            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi e tolgono spazio alle auto", "Sconnessi, pericolosi e sporchi", "Mancanza di rampe per disabili ovunque", "Colore della pavimentazione inadatto"], correct: 1 },
+            { id: 5, q: "Zona critica per parcheggio causa sport serali?", options: ["Bordighera Alta", "Corso Europa", "Via Pasteur e Piazza Morlotti", "Arziglia"], correct: 2 },
+            { id: 6, q: "Potenziale sede per un centro culturale annuale?", options: ["Mercato Coperto", "Palazzo del Parco", "Ex Cinema Olimpia", "Sede dei Vigili"], correct: 1 },
+            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "Il sentiero del Beodo", "Il clima mite e il paesaggio naturale", "Il porto turistico"], correct: 2 },
+            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni troppo abbondanti", "Scarsa qualità del cibo (massimo ribasso)", "Orari dei pasti troppo anticipati", "Mancanza di opzioni vegetariane"], correct: 1 },
+            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi artificiali", "Migliore illuminazione pubblica", "Più telecamere di velocità", "Rifacimento dei sottoservizi"], correct: 1 },
+            { id: 10, q: "Cosa desiderano i giovani per contrastare la 'città morta'?", options: ["Più biblioteche silenziose", "Spazi di aggregazione e locali per musica", "Nuovi campi da bocce", "Un centro commerciale"], correct: 1 }
+        ];
 
-        <button 
-            onClick={() => setView('leaderboard')}
-            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold transition-all flex items-center justify-center hover:bg-blue-700 shadow-lg shadow-blue-100"
-          >
-            Sblocca Archivio <Lock className="ml-2" size={18} />
-          </button>
-      </div>
-    );
-  }
+        const LogoBordighera = ({ className = "w-24 h-24" }) => {
+            return <img src={LOGO_URL} alt="Logo" className={`${className} object-contain rounded-full shadow-md mx-auto`} />;
+        };
 
-  if (view === 'leaderboard') {
-    return (
-      <div className="max-w-md mx-auto py-8 px-6 animate-in slide-in-from-bottom duration-500">
-        {!isUnlocked ? (
-          <div className="text-center space-y-6 py-12">
-            <LogoBordighera className="w-16 h-16 mx-auto mb-4" />
-            <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock size={32} />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Accesso Riservato</h2>
-            <p className="text-slate-500 text-sm">Inserisci il codice segreto per visualizzare i risultati dei candidati.</p>
-            
-            <div className="space-y-3">
-                <input 
-                    type="password" 
-                    placeholder="Codice Admin"
-                    className="w-full px-4 py-4 bg-white border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 text-center text-xl tracking-widest font-mono"
-                    value={passInput}
-                    onChange={(e) => setPassInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && checkPassword()}
-                />
-                {errorMsg && <p className="text-red-500 text-xs font-bold animate-pulse">{errorMsg}</p>}
-                <button 
-                    onClick={checkPassword}
-                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl"
-                >
-                    Conferma Identità
-                </button>
-            </div>
-          </div>
-        ) : (
-          <div className="animate-in fade-in duration-700">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-3">
-                <LogoBordighera className="w-12 h-12" />
-                <div>
-                    <h2 className="text-xl font-bold text-blue-900 leading-none">Graduatoria Candidati</h2>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-tighter">Bordighera Domani 2026</span>
+        const Icon = ({ name, ...props }) => {
+            useEffect(() => { lucide.createIcons(); });
+            return <i data-lucide={name} {...props}></i>;
+        };
+
+        function App() {
+            const [view, setView] = useState('register');
+            const [playerName, setPlayerName] = useState('');
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [score, setScore] = useState(0);
+            const [localLeaderboard, setLocalLeaderboard] = useState([]);
+            const [passInput, setPassInput] = useState('');
+            const [isUnlocked, setIsUnlocked] = useState(false);
+            const [errorMsg, setErrorMsg] = useState('');
+
+            useEffect(() => {
+                const saved = JSON.parse(localStorage.getItem('bordi_leaderboard') || '[]');
+                setLocalLeaderboard(saved);
+                if (localStorage.getItem('bordi_quiz_played') && !isUnlocked) setView('leaderboard');
+            }, [isUnlocked]);
+
+            const finishQuiz = (finalScore) => {
+                const newEntry = { name: playerName, score: finalScore, date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+                const updated = [...localLeaderboard, newEntry].sort((a, b) => b.score - a.score).slice(0, 50);
+                setLocalLeaderboard(updated);
+                localStorage.setItem('bordi_leaderboard', JSON.stringify(updated));
+                localStorage.setItem('bordi_quiz_played', 'true');
+                setView('results');
+            };
+
+            const handleAnswer = (idx) => {
+                const isCorrect = idx === quizData[currentQuestion].correct;
+                const newScore = isCorrect ? score + 1 : score;
+                setScore(newScore);
+                if (currentQuestion < quizData.length - 1) setCurrentQuestion(currentQuestion + 1);
+                else finishQuiz(newScore);
+            };
+
+            const checkPassword = () => {
+                if (passInput === SECRET_PASSWORD) { setIsUnlocked(true); setErrorMsg(''); }
+                else { setErrorMsg('Codice errato.'); setPassInput(''); }
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                    {view === 'register' && (
+                        <div className="max-w-sm w-full text-center animate-quiz">
+                            <LogoBordighera className="w-32 h-32 mb-6" />
+                            <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter">BORDIGHERA DOMANI</h1>
+                            <div className="h-1 w-16 bg-blue-600 mx-auto mb-4 rounded-full"></div>
+                            <p className="text-slate-600 mb-8 font-medium italic italic">"Conosci davvero il Mugugno cittadino?"</p>
+                            <input 
+                                type="text" 
+                                placeholder="Nome del Candidato" 
+                                className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none shadow-sm"
+                                value={playerName}
+                                onChange={(e) => setPlayerName(e.target.value)}
+                            />
+                            <button 
+                                onClick={() => playerName.length >= 2 && setView('quiz')}
+                                disabled={playerName.length < 2}
+                                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg transition-all"
+                            >
+                                Inizia il Test
+                            </button>
+                            <p className="mt-8 text-[10px] text-slate-400 uppercase font-bold">Area Riservata Lista Civica</p>
+                        </div>
+                    )}
+
+                    {view === 'quiz' && (
+                        <div className="max-w-2xl w-full animate-quiz">
+                            <div className="flex justify-between items-center mb-6">
+                                <span className="text-xs font-black text-blue-900 uppercase">Domanda {currentQuestion + 1}/10</span>
+                                <span className="text-xs font-bold text-slate-400">Punti: {score}</span>
+                            </div>
+                            <div className="w-full bg-slate-200 h-2 rounded-full mb-8">
+                                <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${((currentQuestion + 1)/10)*100}%`}}></div>
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-8">{quizData[currentQuestion].q}</h2>
+                            <div className="space-y-3">
+                                {quizData[currentQuestion].options.map((opt, idx) => (
+                                    <button 
+                                        key={idx} 
+                                        onClick={() => handleAnswer(idx)}
+                                        className="w-full p-5 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all flex justify-between items-center group"
+                                    >
+                                        <span className="font-medium text-slate-700 group-hover:text-blue-700">{opt}</span>
+                                        <Icon name="chevron-right" className="text-slate-300 group-hover:text-blue-500 w-5 h-5" />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'results' && (
+                        <div className="max-w-sm w-full text-center animate-quiz">
+                            <LogoBordighera className="w-20 h-20 mb-6" />
+                            <div className="text-5xl font-black text-blue-900 mb-4">{score}/10</div>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Test Completato</h2>
+                            <p className="text-slate-600 mb-8">Grazie <strong>{playerName}</strong>. Il tuo contributo è stato archiviato.</p>
+                            <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700">
+                                <Icon name="eye-off" className="mx-auto mb-2 text-slate-600 w-8 h-8" />
+                                <p className="text-sm text-slate-300">CLASSIFICA SECRETATA</p>
+                            </div>
+                            <button onClick={() => setView('leaderboard')} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg">
+                                Sblocca Archivio
+                            </button>
+                        </div>
+                    )}
+
+                    {view === 'leaderboard' && (
+                        <div className="max-w-md w-full animate-quiz">
+                            {!isUnlocked ? (
+                                <div className="text-center py-8">
+                                    <Icon name="lock" className="w-12 h-12 mx-auto mb-4 text-red-500" />
+                                    <h2 className="text-xl font-bold mb-6">Area Protetta Amministratore</h2>
+                                    <input 
+                                        type="password" 
+                                        placeholder="Codice Segreto" 
+                                        className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center"
+                                        value={passInput}
+                                        onChange={(e) => setPassInput(e.target.value)}
+                                    />
+                                    {errorMsg && <p className="text-red-500 text-xs mb-4 font-bold">{errorMsg}</p>}
+                                    <button onClick={checkPassword} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold">Accedi</button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="flex justify-between items-center mb-8">
+                                        <h2 className="text-2xl font-bold text-blue-900">Graduatoria Candidati</h2>
+                                        <button onClick={() => setIsUnlocked(false)} className="text-xs text-slate-400 uppercase font-bold flex items-center">
+                                            <Icon name="key-round" className="w-3 h-3 mr-1" /> Blocca
+                                        </button>
+                                    </div>
+                                    <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+                                        {localLeaderboard.map((entry, idx) => (
+                                            <div key={idx} className="flex items-center justify-between p-5 border-b border-slate-50 last:border-0">
+                                                <div className="flex items-center space-x-4">
+                                                    <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold">{idx+1}</span>
+                                                    <div>
+                                                        <p className="font-bold text-slate-800 text-sm uppercase">{entry.name}</p>
+                                                        <p className="text-[10px] text-slate-400">{entry.date}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="font-black text-blue-600">{entry.score}/10</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
-              </div>
-              <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black">
-                  LIVE DATA
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
-              {localLeaderboard.map((entry, idx) => (
-                <div key={idx} className={`flex items-center justify-between p-5 border-b border-slate-50 last:border-0 ${entry.name === playerName ? 'bg-blue-50/50' : ''}`}>
-                  <div className="flex items-center space-x-4">
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${idx === 0 ? 'bg-yellow-400 text-white' : idx === 1 ? 'bg-slate-300 text-white' : idx === 2 ? 'bg-orange-300 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                      {idx + 1}
-                    </span>
-                    <div>
-                        <p className="font-bold text-slate-800 uppercase text-sm leading-none">{entry.name}</p>
-                        <p className="text-[10px] text-slate-400 mt-1">Registrato alle {entry.date}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center bg-blue-50 px-3 py-1 rounded-xl border border-blue-100">
-                    <span className="text-lg font-black text-blue-700">{entry.score}</span>
-                    <span className="text-[10px] text-blue-400 ml-1 font-bold">/10</span>
-                  </div>
-                </div>
-              ))}
-              {localLeaderboard.length === 0 && (
-                <div className="p-12 text-center text-slate-400 font-medium italic">Nessun dato presente in questo terminale.</div>
-              )}
-            </div>
-            
-            <div className="mt-8 text-center">
-                <button 
-                    onClick={() => setIsUnlocked(false)}
-                    className="text-slate-400 hover:text-red-500 text-xs font-bold uppercase tracking-widest flex items-center justify-center mx-auto transition-all"
-                >
-                    <KeyRound size={14} className="mr-1" /> Blocca Archivio
-                </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
+            );
+        }
 
-  return null;
-}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
