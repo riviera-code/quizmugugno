@@ -28,8 +28,6 @@
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        /* Effetto arcade sui bottoni */
         .arcade-btn:active { transform: translateY(2px); filter: brightness(1.2); }
     </style>
 </head>
@@ -42,71 +40,29 @@
         const LOGO_URL = "https://github.com/riviera-code/quizmugugno/blob/main/Bordighera-domani.png?raw=true"; 
         const SECRET_PASSWORD = "BordigheraDomani2026";
 
-        // --- AUDIO ENGINE (90s STYLE) ---
-        const playSound = (type = 'start') => {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const masterGain = ctx.createGain();
-            masterGain.gain.value = 0.1; 
-            masterGain.connect(ctx.destination);
-
-            const playNote = (freq, start, duration, wave = 'square') => {
-                const osc = ctx.createOscillator();
-                const g = ctx.createGain();
-                osc.type = wave;
-                osc.frequency.setValueAtTime(freq, start);
-                g.gain.setValueAtTime(0.1, start);
-                g.gain.exponentialRampToValueAtTime(0.00001, start + duration);
-                osc.connect(g);
-                g.connect(masterGain);
-                osc.start(start);
-                osc.stop(start + duration);
-            };
-
-            const now = ctx.currentTime;
-            switch(type) {
-                case 'start':
-                    playNote(261.63, now, 0.1);
-                    playNote(329.63, now + 0.1, 0.1);
-                    playNote(392.00, now + 0.2, 0.3);
-                    break;
-                case 'select':
-                    playNote(600, now, 0.05, 'sine');
-                    break;
-                case 'correct':
-                    playNote(523.25, now, 0.1);
-                    playNote(659.25, now + 0.1, 0.2);
-                    break;
-                case 'wrong':
-                    playNote(220, now, 0.1);
-                    playNote(180, now + 0.1, 0.3);
-                    break;
-                case 'finish':
-                    [523, 659, 783, 1046].forEach((f, i) => playNote(f, now + (i*0.1), 0.4, 'triangle'));
-                    break;
-            }
-        };
-
+        // Quiz Data con 20 domande e opzione "Nessuna delle precedenti"
+        // Alcune domande hanno "Nessuna delle precedenti" come corretta
         const quizData = [
-            { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Costo eccessivo TARI", "Mancanza di cestini", "Inefficienza sistema tessere e scomodità", "Mancanza di spazzamento"], correct: 2 },
-            { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["La pedonalizzazione completa", "Più stabilimenti privati", "Nuovi parcheggi sulla spiaggia", "Più giochi per bambini"], correct: 0 },
-            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi", "Eccesso di rumore", "Mancanza di scarico merci", "Troppi negozi chiusi e vetrine vuote"], correct: 3 },
-            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi", "Sconnessi, pericolosi e sporchi", "Mancanza di rampe", "Colore pavimentazione"], correct: 1 },
-            { id: 5, q: "Zona critica per parcheggio causa sport serali?", options: ["Bordighera Alta", "Corso Europa", "Arziglia", "Via Pasteur e Piazza Morlotti"], correct: 3 },
-            { id: 6, q: "Potenziale sede per un centro culturale annuale?", options: ["Palazzo del Parco", "Mercato Coperto", "Ex Cinema Olimpia", "Sede dei Vigili"], correct: 0 },
-            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "Il sentiero del Beodo", "Il clima mite e il paesaggio", "Il porto turistico"], correct: 2 },
-            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni abbondanti", "Scarsa qualità (massimo ribasso)", "Orari dei pasti", "Mancanza opzioni bio"], correct: 1 },
-            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi", "Migliore illuminazione pubblica", "Più telecamere", "Rifacimento asfalto"], correct: 1 },
-            { id: 10, q: "Cosa si propone per incentivare l'uso della bicicletta?", options: ["Noleggio bici comunale economico", "Più piste ciclabili alte", "Rastrelliere ovunque", "ZTL per le auto"], correct: 0 },
-            { id: 11, q: "Cosa chiedono i residenti riguardo ai Vigili Urbani?", options: ["Meno multe per divieto", "Più pattuglie in auto", "Presenza fisica sui marciapiedi e a piedi", "Più uffici aperti"], correct: 2 },
-            { id: 12, q: "Quale eccellenza culturale è citata per l'importanza educativa?", options: ["La Biblioteca Civica", "Teatro della Concordia", "Il Museo Bicknell", "Villa Regina Margherita"], correct: 0 },
-            { id: 13, q: "Cosa suggeriscono per i parcheggi in centro oltre alla superficie?", options: ["Eliminare le strisce blu", "Bus navetta gratuito", "Permessi solo ai residenti", "Costruzione di parcheggi sotterranei"], correct: 3 },
-            { id: 14, q: "Quale sentimento prevale sul declino della città?", options: ["Rabbia e aggressività", "Indifferenza totale", "Tristezza e malinconia", "Speranza immediata"], correct: 2 },
-            { id: 15, q: "Iniziativa proposta per aiutare le famiglie in difficoltà?", options: ["Bonus spesa mensili", "Ascolto servizi sociali e supporto bambini", "Nuovi asili nido privati", "Esonero tasse comunali"], correct: 1 },
-            { id: 16, q: "Che tipo di turismo si vorrebbe incentivare oltre al balneare?", options: ["Turismo crocieristico", "Culturale, sportivo e invernale", "Turismo d'affari", "Parchi a tema"], correct: 1 },
-            { id: 17, q: "Quale elemento del lungomare è considerato 'inviolabile'?", options: ["I chioschi storici", "Il muraglione", "La rotonda di Sant'Ampelio", "Le Araucarie storiche"], correct: 3 },
-            { id: 18, q: "Cosa si suggerisce per contrastare l'accattonaggio molesto?", options: ["Maggiore controllo delle forze dell'ordine", "Zone interdette ai non residenti", "Aiuti economici diretti", "Campagna di sensibilizzazione"], correct: 0 },
-            { id: 19, q: "Quale termine usano i cittadini per descrivere l'attuale gestione?", options: ["Poca lungimiranza", "Mancanza di ascolto e arroganza", "Troppa burocrazia", "Mancanza di fondi"], correct: 1 },
-            { id: 20, q: "Obiettivo principale di un programma per il domani?", options: ["Visione con obiettivi chiari a breve/medio/lungo termine", "Fare eventi ogni weekend", "Riparare solo le buche", "Abbassare l'età dei consiglieri"], correct: 0 }
+            { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Costo eccessivo TARI", "Mancanza di cestini", "Inefficienza sistema tessere e scomodità", "Nessuna delle precedenti"], correct: 2 },
+            { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["La pedonalizzazione completa", "Più stabilimenti privati", "Nuovi parcheggi sulla spiaggia", "Nessuna delle precedenti"], correct: 0 },
+            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi", "Eccesso di rumore", "Afflusso eccessivo di turisti", "Nessuna delle precedenti"], correct: 3 }, // Corretta: Nessuna (il problema sono i negozi chiusi)
+            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi", "Sconnessi, pericolosi e sporchi", "Mancanza di rampe", "Nessuna delle precedenti"], correct: 1 },
+            { id: 5, q: "Zona critica per parcheggio causa sport serali?", options: ["Bordighera Alta", "Corso Europa", "Arziglia", "Nessuna delle precedenti"], correct: 3 }, // Corretta: Nessuna (Via Pasteur)
+            { id: 6, q: "Potenziale sede per un centro culturale annuale?", options: ["Palazzo del Parco", "Mercato Coperto", "Ex Cinema Olimpia", "Nessuna delle precedenti"], correct: 0 },
+            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "Il sentiero del Beodo", "Il clima mite e il paesaggio", "Nessuna delle precedenti"], correct: 2 },
+            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni abbondanti", "Scarsa qualità (massimo ribasso)", "Orari dei pasti", "Nessuna delle precedenti"], correct: 1 },
+            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi", "Migliore illuminazione pubblica", "Più telecamere", "Nessuna delle precedenti"], correct: 1 },
+            { id: 10, q: "Cosa si propone per incentivare l'uso della bicicletta?", options: ["Noleggio bici comunale economico", "Più piste ciclabili alte", "Rastrelliere ovunque", "Nessuna delle precedenti"], correct: 0 },
+            { id: 11, q: "Cosa chiedono i residenti riguardo ai Vigili Urbani?", options: ["Meno multe per divieto", "Più pattuglie in auto", "Presenza fisica a piedi e marciapiedi", "Nessuna delle precedenti"], correct: 2 },
+            { id: 12, q: "Quale eccellenza culturale è citata per l'importanza educativa?", options: ["La Biblioteca Civica", "Teatro della Concordia", "Il Museo Bicknell", "Nessuna delle precedenti"], correct: 0 },
+            { id: 13, q: "Cosa suggeriscono per i parcheggi in centro oltre alla superficie?", options: ["Eliminare le strisce blu", "Bus navetta gratuito", "Permessi solo ai residenti", "Nessuna delle precedenti"], correct: 3 }, // Corretta: Nessuna (Sotterranei)
+            { id: 14, q: "Quale sentimento prevale sul declino della città?", options: ["Rabbia e aggressività", "Indifferenza totale", "Tristezza e malinconia", "Nessuna delle precedenti"], correct: 2 },
+            { id: 15, q: "Iniziativa proposta per aiutare le famiglie in difficoltà?", options: ["Bonus spesa mensili", "Ascolto servizi sociali e supporto bambini", "Nuovi asili nido privati", "Nessuna delle precedenti"], correct: 1 },
+            { id: 16, q: "Che tipo di turismo si vorrebbe incentivare oltre al balneare?", options: ["Turismo crocieristico", "Culturale, sportivo e invernale", "Turismo d'affari", "Nessuna delle precedenti"], correct: 1 },
+            { id: 17, q: "Quale elemento del lungomare è considerato 'inviolabile'?", options: ["I chioschi storici", "Il muraglione", "La rotonda di Sant'Ampelio", "Nessuna delle precedenti"], correct: 3 }, // Corretta: Nessuna (Araucarie)
+            { id: 18, q: "Cosa si suggerisce per contrastare l'accattonaggio molesto?", options: ["Maggiore controllo delle forze dell'ordine", "Zone interdette ai non residenti", "Aiuti economici diretti", "Nessuna delle precedenti"], correct: 0 },
+            { id: 19, q: "Quale termine usano i cittadini per descrivere l'attuale gestione?", options: ["Poca lungimiranza", "Mancanza di ascolto e arroganza", "Troppa burocrazia", "Nessuna delle precedenti"], correct: 1 },
+            { id: 20, q: "Obiettivo principale di un programma per il domani?", options: ["Visione con obiettivi chiari a breve/medio/lungo termine", "Fare eventi ogni weekend", "Riparare solo le buche", "Nessuna delle precedenti"], correct: 0 }
         ];
 
         const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -150,6 +106,9 @@
             const [isUnlocked, setIsUnlocked] = useState(false);
             const [errorMsg, setErrorMsg] = useState('');
             const [soundEnabled, setSoundEnabled] = useState(true);
+            
+            // Audio Ref per gestire un unico contesto
+            const audioCtxRef = useRef(null);
 
             useEffect(() => {
                 const saved = JSON.parse(localStorage.getItem('bordi_leaderboard') || '[]');
@@ -158,8 +117,58 @@
                 if (hasPlayed && view === 'register') setView('leaderboard');
             }, []);
 
-            const triggerSound = (type) => {
-                if (soundEnabled) playSound(type);
+            const getAudioCtx = async () => {
+                if (!audioCtxRef.current) {
+                    audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtxRef.current.state === "suspended") {
+                    await audioCtxRef.current.resume();
+                }
+                return audioCtxRef.current;
+            };
+
+            const triggerSound = async (type) => {
+                if (!soundEnabled) return;
+                
+                const ctx = await getAudioCtx();
+                const masterGain = ctx.createGain();
+                masterGain.gain.value = 0.1;
+                masterGain.connect(ctx.destination);
+
+                const playNote = (freq, start, duration, wave = 'square') => {
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    osc.type = wave;
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+                    g.gain.setValueAtTime(0.1, ctx.currentTime + start);
+                    g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + start + duration);
+                    osc.connect(g);
+                    g.connect(masterGain);
+                    osc.start(ctx.currentTime + start);
+                    osc.stop(ctx.currentTime + start + duration);
+                };
+
+                switch(type) {
+                    case 'start':
+                        playNote(261.63, 0, 0.1);
+                        playNote(329.63, 0.1, 0.1);
+                        playNote(392.00, 0.2, 0.3);
+                        break;
+                    case 'select':
+                        playNote(600, 0, 0.05, 'sine');
+                        break;
+                    case 'correct':
+                        playNote(523.25, 0, 0.1);
+                        playNote(659.25, 0.1, 0.2);
+                        break;
+                    case 'wrong':
+                        playNote(220, 0, 0.1);
+                        playNote(180, 0.1, 0.3);
+                        break;
+                    case 'finish':
+                        [523, 659, 783, 1046].forEach((f, i) => playNote(f, i * 0.1, 0.4, 'triangle'));
+                        break;
+                }
             };
 
             const finishQuiz = (finalScore) => {
@@ -192,6 +201,7 @@
             };
 
             function checkPassword() {
+                triggerSound('select');
                 if (passInput === SECRET_PASSWORD) { 
                     setIsUnlocked(true); 
                     setErrorMsg(''); 
@@ -227,7 +237,13 @@
                             <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter uppercase leading-none">Bordighera Domani</h1>
                             <div className="h-1 w-16 bg-blue-600 mx-auto mb-4 rounded-full mt-2"></div>
                             <p className="text-slate-600 mb-8 font-medium italic">"Conosci davvero il Mugugno cittadino?"</p>
-                            <input type="text" placeholder="Nome del Candidato" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none shadow-sm font-bold" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
+                            <input 
+                                type="text" 
+                                placeholder="Nome e Cognome del Candidato" 
+                                className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none shadow-sm font-bold" 
+                                value={playerName} 
+                                onChange={(e) => setPlayerName(e.target.value)} 
+                            />
                             <button onClick={startQuiz} disabled={playerName.length < 2} className="arcade-btn w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg transition-all">
                                 Inizia il Test
                             </button>
@@ -240,9 +256,9 @@
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center space-x-3">
                                     <img src={LOGO_URL} className="w-8 h-8 object-contain" alt="mini logo" />
-                                    <span className="text-xs font-black text-blue-900 uppercase tracking-widest font-bold">Domanda {currentQuestion + 1}/{quizData.length}</span>
+                                    <span className="text-xs font-black text-blue-900 uppercase tracking-widest font-bold">Analisi Criticità {currentQuestion + 1}/{quizData.length}</span>
                                 </div>
-                                <span className="text-[10px] font-black text-slate-300 uppercase italic">Audio: {soundEnabled ? "ON" : "OFF"}</span>
+                                <span className="text-[10px] font-black text-slate-300 uppercase italic">Punteggio Secretato</span>
                             </div>
                             <div className="w-full bg-slate-200 h-2 rounded-full mb-8 overflow-hidden">
                                 <div className="h-full bg-blue-600 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(37,99,235,0.5)]" style={{ width: `${((currentQuestion + 1)/quizData.length)*100}%`}}></div>
@@ -266,10 +282,11 @@
                                 <Icon name="check" className="w-10 h-10 text-green-600" />
                             </div>
                             <h2 className="text-2xl font-bold text-slate-800 mb-2 uppercase tracking-tighter">Test Ultimato</h2>
-                            <p className="text-slate-600 mb-8 leading-relaxed italic">"Ottimo lavoro {playerName}, i cittadini hanno parlato!"</p>
+                            <p className="text-slate-600 mb-8 leading-relaxed italic">"Ottimo lavoro {playerName}, il tuo test è stato acquisito!"</p>
                             <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700 shadow-inner">
                                 <Icon name="eyeOff" className="mx-auto mb-2 text-slate-600 w-8 h-8" />
-                                <p className="text-xs font-black text-slate-300 tracking-widest">PUNTEGGIO SECRETATO</p>
+                                <p className="text-xs font-black text-slate-300 tracking-widest">RISULTATO SECRETATO</p>
+                                <p className="text-[10px] text-slate-500 mt-2 uppercase">L'amministratore valuterà le risposte</p>
                             </div>
                             <button onClick={() => { triggerSound('select'); setView('leaderboard'); }} className="arcade-btn w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center transition-transform">
                                 <Icon name="lock" className="w-4 h-4 mr-2" /> Archivio Admin
@@ -289,7 +306,7 @@
                                     {errorMsg && <p className="text-red-500 text-xs mb-4 font-bold">{errorMsg}</p>}
                                     <div className="flex gap-2">
                                         <button onClick={() => { triggerSound('select'); setView('register'); }} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">Esci</button>
-                                        <button onClick={() => { triggerSound('select'); checkPassword(); }} className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl">Sblocca</button>
+                                        <button onClick={checkPassword} className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl">Sblocca</button>
                                     </div>
                                 </div>
                             ) : (
