@@ -28,18 +28,64 @@
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Effetto arcade sui bottoni */
+        .arcade-btn:active { transform: translateY(2px); filter: brightness(1.2); }
     </style>
 </head>
 <body class="bg-slate-50 font-sans no-select">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         const LOGO_URL = "https://github.com/riviera-code/quizmugugno/blob/main/Bordighera-domani.png?raw=true"; 
         const SECRET_PASSWORD = "BordigheraDomani2026";
 
-        // Quiz Data con risposte spalmate su indici diversi (0, 1, 2, 3)
+        // --- AUDIO ENGINE (90s STYLE) ---
+        const playSound = (type = 'start') => {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const masterGain = ctx.createGain();
+            masterGain.gain.value = 0.1; 
+            masterGain.connect(ctx.destination);
+
+            const playNote = (freq, start, duration, wave = 'square') => {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = wave;
+                osc.frequency.setValueAtTime(freq, start);
+                g.gain.setValueAtTime(0.1, start);
+                g.gain.exponentialRampToValueAtTime(0.00001, start + duration);
+                osc.connect(g);
+                g.connect(masterGain);
+                osc.start(start);
+                osc.stop(start + duration);
+            };
+
+            const now = ctx.currentTime;
+            switch(type) {
+                case 'start':
+                    playNote(261.63, now, 0.1);
+                    playNote(329.63, now + 0.1, 0.1);
+                    playNote(392.00, now + 0.2, 0.3);
+                    break;
+                case 'select':
+                    playNote(600, now, 0.05, 'sine');
+                    break;
+                case 'correct':
+                    playNote(523.25, now, 0.1);
+                    playNote(659.25, now + 0.1, 0.2);
+                    break;
+                case 'wrong':
+                    playNote(220, now, 0.1);
+                    playNote(180, now + 0.1, 0.3);
+                    break;
+                case 'finish':
+                    [523, 659, 783, 1046].forEach((f, i) => playNote(f, now + (i*0.1), 0.4, 'triangle'));
+                    break;
+            }
+        };
+
         const quizData = [
             { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Costo eccessivo TARI", "Mancanza di cestini", "Inefficienza sistema tessere e scomodità", "Mancanza di spazzamento"], correct: 2 },
             { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["La pedonalizzazione completa", "Più stabilimenti privati", "Nuovi parcheggi sulla spiaggia", "Più giochi per bambini"], correct: 0 },
@@ -77,7 +123,9 @@
                         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
                         <circle cx="12" cy="12" r="3"/>
                     </React.Fragment>
-                )
+                ),
+                volume: <path d="M11 5 6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>,
+                volumeX: <path d="M11 5 6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
             };
             return (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -101,19 +149,21 @@
             const [passInput, setPassInput] = useState('');
             const [isUnlocked, setIsUnlocked] = useState(false);
             const [errorMsg, setErrorMsg] = useState('');
+            const [soundEnabled, setSoundEnabled] = useState(true);
 
-            // Effetto al caricamento iniziale
             useEffect(() => {
                 const saved = JSON.parse(localStorage.getItem('bordi_leaderboard') || '[]');
                 setLocalLeaderboard(saved);
-                
                 const hasPlayed = localStorage.getItem('bordi_quiz_played');
-                if (hasPlayed && view === 'register') {
-                    setView('leaderboard');
-                }
+                if (hasPlayed && view === 'register') setView('leaderboard');
             }, []);
 
+            const triggerSound = (type) => {
+                if (soundEnabled) playSound(type);
+            };
+
             const finishQuiz = (finalScore) => {
+                triggerSound('finish');
                 const newEntry = { 
                     id: Date.now(),
                     name: playerName, 
@@ -129,6 +179,8 @@
 
             const handleAnswer = (idx) => {
                 const isCorrect = idx === quizData[currentQuestion].correct;
+                triggerSound(isCorrect ? 'correct' : 'wrong');
+                
                 const newScore = isCorrect ? score + 1 : score;
                 setScore(newScore);
                 
@@ -139,7 +191,7 @@
                 }
             };
 
-            const checkPassword = () => {
+            function checkPassword() {
                 if (passInput === SECRET_PASSWORD) { 
                     setIsUnlocked(true); 
                     setErrorMsg(''); 
@@ -147,42 +199,36 @@
                     setErrorMsg('Codice errato.'); 
                     setPassInput(''); 
                 }
-            };
+            }
 
-            const deleteEntry = (id) => {
-                const updated = localLeaderboard.filter(entry => entry.id !== id);
-                setLocalLeaderboard(updated);
-                localStorage.setItem('bordi_leaderboard', JSON.stringify(updated));
-                localStorage.removeItem('bordi_quiz_played');
+            const startQuiz = () => {
+                if (playerName.length >= 2) {
+                    triggerSound('start');
+                    setView('quiz');
+                }
             };
 
             return (
                 <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                    {/* Toggle Audio Global */}
+                    <button 
+                        onClick={() => setSoundEnabled(!soundEnabled)}
+                        className="fixed top-4 left-4 p-3 bg-white shadow-md rounded-full text-slate-400 hover:text-blue-600 transition-all z-50"
+                    >
+                        <Icon name={soundEnabled ? "volume" : "volumeX"} className="w-6 h-6" />
+                    </button>
+
                     {view === 'register' && (
                         <div className="max-w-sm w-full text-center animate-quiz relative">
-                            <button 
-                                onClick={() => setView('leaderboard')}
-                                className="absolute -top-12 -right-4 p-2 text-slate-300 hover:text-blue-500 transition-colors"
-                            >
+                            <button onClick={() => { triggerSound('select'); setView('leaderboard'); }} className="absolute -top-12 -right-4 p-2 text-slate-300 hover:text-blue-500 transition-colors">
                                 <Icon name="settings" className="w-5 h-5" />
                             </button>
-
                             <LogoBordighera className="w-32 h-32 mb-6" />
                             <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter uppercase leading-none">Bordighera Domani</h1>
                             <div className="h-1 w-16 bg-blue-600 mx-auto mb-4 rounded-full mt-2"></div>
                             <p className="text-slate-600 mb-8 font-medium italic">"Conosci davvero il Mugugno cittadino?"</p>
-                            <input 
-                                type="text" 
-                                placeholder="Nome del Candidato" 
-                                className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none shadow-sm font-bold"
-                                value={playerName}
-                                onChange={(e) => setPlayerName(e.target.value)}
-                            />
-                            <button 
-                                onClick={() => playerName.length >= 2 && setView('quiz')}
-                                disabled={playerName.length < 2}
-                                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg transition-all"
-                            >
+                            <input type="text" placeholder="Nome del Candidato" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none shadow-sm font-bold" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
+                            <button onClick={startQuiz} disabled={playerName.length < 2} className="arcade-btn w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg transition-all">
                                 Inizia il Test
                             </button>
                             <p className="mt-8 text-[10px] text-slate-400 uppercase font-bold tracking-widest">Area Riservata Candidati</p>
@@ -194,9 +240,9 @@
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center space-x-3">
                                     <img src={LOGO_URL} className="w-8 h-8 object-contain" alt="mini logo" />
-                                    <span className="text-xs font-black text-blue-900 uppercase tracking-widest">Analisi Criticità {currentQuestion + 1}/{quizData.length}</span>
+                                    <span className="text-xs font-black text-blue-900 uppercase tracking-widest font-bold">Domanda {currentQuestion + 1}/{quizData.length}</span>
                                 </div>
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">Punteggio Secretato</span>
+                                <span className="text-[10px] font-black text-slate-300 uppercase italic">Audio: {soundEnabled ? "ON" : "OFF"}</span>
                             </div>
                             <div className="w-full bg-slate-200 h-2 rounded-full mb-8 overflow-hidden">
                                 <div className="h-full bg-blue-600 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(37,99,235,0.5)]" style={{ width: `${((currentQuestion + 1)/quizData.length)*100}%`}}></div>
@@ -204,11 +250,7 @@
                             <h2 className="text-2xl font-bold text-slate-800 mb-8 leading-tight">{quizData[currentQuestion].q}</h2>
                             <div className="grid gap-3">
                                 {quizData[currentQuestion].options.map((opt, idx) => (
-                                    <button 
-                                        key={idx} 
-                                        onClick={() => handleAnswer(idx)}
-                                        className="w-full p-5 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all flex justify-between items-center group shadow-sm"
-                                    >
+                                    <button key={idx} onClick={() => handleAnswer(idx)} className="arcade-btn w-full p-5 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all flex justify-between items-center group shadow-sm">
                                         <span className="font-medium text-slate-700 group-hover:text-blue-700 leading-snug">{opt}</span>
                                         <Icon name="chevron" className="text-slate-300 group-hover:text-blue-500 w-5 h-5 flex-shrink-0" />
                                     </button>
@@ -223,15 +265,14 @@
                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Icon name="check" className="w-10 h-10 text-green-600" />
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2 uppercase">Test Completato</h2>
-                            <p className="text-slate-600 mb-8 leading-relaxed">Grazie <strong>{playerName}</strong>.<br/>Il tuo livello di conoscenza del mugugno è stato archiviato correttamente.</p>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2 uppercase tracking-tighter">Test Ultimato</h2>
+                            <p className="text-slate-600 mb-8 leading-relaxed italic">"Ottimo lavoro {playerName}, i cittadini hanno parlato!"</p>
                             <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700 shadow-inner">
                                 <Icon name="eyeOff" className="mx-auto mb-2 text-slate-600 w-8 h-8" />
-                                <p className="text-xs font-black text-slate-300 tracking-widest">RISULTATO SECRETATO</p>
-                                <p className="text-[10px] text-slate-500 mt-2 uppercase">Solo l'amministratore può sbloccare i dati</p>
+                                <p className="text-xs font-black text-slate-300 tracking-widest">PUNTEGGIO SECRETATO</p>
                             </div>
-                            <button onClick={() => setView('leaderboard')} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center transition-transform active:scale-95">
-                                <Icon name="lock" className="w-4 h-4 mr-2" /> Sblocca Archivio
+                            <button onClick={() => { triggerSound('select'); setView('leaderboard'); }} className="arcade-btn w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center transition-transform">
+                                <Icon name="lock" className="w-4 h-4 mr-2" /> Archivio Admin
                             </button>
                         </div>
                     )}
@@ -240,23 +281,15 @@
                         <div className="max-w-md w-full animate-quiz">
                             {!isUnlocked ? (
                                 <div className="text-center py-8">
-                                    <LogoBordighera className="w-20 h-20 mb-6 opacity-50" />
                                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <Icon name="shield" className="w-8 h-8 text-blue-600" />
                                     </div>
-                                    <h2 className="text-xl font-bold mb-6 text-slate-800">Area Protetta Amministrazione</h2>
-                                    <input 
-                                        type="password" 
-                                        placeholder="Codice Segreto Lista" 
-                                        className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center text-xl tracking-widest font-mono shadow-inner"
-                                        value={passInput}
-                                        onChange={(e) => setPassInput(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && checkPassword()}
-                                    />
+                                    <h2 className="text-xl font-bold mb-6 text-slate-800 uppercase tracking-tighter">Login Amministratore</h2>
+                                    <input type="password" placeholder="Passcode" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center text-xl tracking-widest font-mono shadow-inner" value={passInput} onChange={(e) => setPassInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && checkPassword()} />
                                     {errorMsg && <p className="text-red-500 text-xs mb-4 font-bold">{errorMsg}</p>}
                                     <div className="flex gap-2">
-                                        <button onClick={() => setView('register')} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">Annulla</button>
-                                        <button onClick={checkPassword} className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl transition-all active:bg-black">Accedi</button>
+                                        <button onClick={() => { triggerSound('select'); setView('register'); }} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">Esci</button>
+                                        <button onClick={() => { triggerSound('select'); checkPassword(); }} className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl">Sblocca</button>
                                     </div>
                                 </div>
                             ) : (
@@ -267,12 +300,8 @@
                                             <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-1 italic">Gestione Candidati - Bordighera Domani</p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={() => setView('register')} className="bg-blue-50 p-2 rounded-xl text-blue-600 hover:bg-blue-100 transition-colors" title="Torna alla Home">
-                                                <Icon name="logout" className="w-5 h-5" />
-                                            </button>
-                                            <button onClick={() => setIsUnlocked(false)} className="bg-slate-100 p-2 rounded-xl text-slate-400 hover:text-red-500 transition-colors" title="Blocca">
-                                                <Icon name="lock" className="w-5 h-5" />
-                                            </button>
+                                            <button onClick={() => { triggerSound('select'); setView('register'); }} className="bg-blue-50 p-2 rounded-xl text-blue-600 hover:bg-blue-100"><Icon name="logout" className="w-5 h-5" /></button>
+                                            <button onClick={() => { triggerSound('select'); setIsUnlocked(false); }} className="bg-slate-100 p-2 rounded-xl text-slate-400"><Icon name="lock" className="w-5 h-5" /></button>
                                         </div>
                                     </div>
                                     <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 max-h-[60vh] overflow-y-auto custom-scroll">
@@ -286,26 +315,11 @@
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-4">
-                                                    <div className="flex items-baseline space-x-0.5">
-                                                        <span className="text-lg font-black text-blue-600">{entry.score}</span>
-                                                        <span className="text-[10px] font-bold text-slate-300">/20</span>
-                                                    </div>
-                                                    <button 
-                                                        onClick={() => deleteEntry(entry.id)}
-                                                        className="p-2 text-slate-200 hover:text-red-500 transition-colors"
-                                                        title="Elimina risultato"
-                                                    >
-                                                        <Icon name="trash" className="w-4 h-4" />
-                                                    </button>
+                                                    <div className="flex items-baseline space-x-0.5 font-black text-blue-600 text-lg">{entry.score}<span className="text-[10px] font-bold text-slate-300 uppercase ml-0.5">pt</span></div>
+                                                    <button onClick={() => { triggerSound('wrong'); const up = localLeaderboard.filter(e => e.id !== entry.id); setLocalLeaderboard(up); localStorage.setItem('bordi_leaderboard', JSON.stringify(up)); localStorage.removeItem('bordi_quiz_played'); }} className="p-2 text-slate-200 hover:text-red-500 transition-colors"><Icon name="trash" className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
                                         ))}
-                                        {localLeaderboard.length === 0 && (
-                                            <div className="p-12 text-center text-slate-300 font-medium italic">Nessun dato registrato.</div>
-                                        )}
-                                    </div>
-                                    <div className="mt-6 text-center">
-                                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">L'eliminazione di un record sblocca il dispositivo per un nuovo test</p>
                                     </div>
                                 </div>
                             )}
