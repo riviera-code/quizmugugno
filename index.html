@@ -24,7 +24,12 @@
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .arcade-btn:active { transform: translateY(2px); filter: brightness(1.2); }
+        .arcade-btn:active { transform: translateY(2px); filter: brightness(1.1); }
+        /* Ottimizzazione pulsanti risposta */
+        .answer-btn {
+            min-height: 3.5rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 <body class="bg-slate-50 font-sans no-select">
@@ -139,7 +144,6 @@
                 }
             };
 
-            // Polling per caricamento Firebase
             useEffect(() => {
                 const interval = setInterval(() => {
                     if (window.fb) {
@@ -156,7 +160,7 @@
                 try {
                     config = JSON.parse(__firebase_config);
                 } catch (e) {
-                    console.warn("Configurazione automatica non presente. L'app funzionerà in modalità locale finché non viene fornita una config.");
+                    console.warn("Firebase config missing - local mode active");
                 }
 
                 if (!config || !FB) return;
@@ -178,7 +182,7 @@
                         if (u && localStorage.getItem('bordi_quiz_played') && view === 'register') setView('leaderboard');
                     });
                 } catch (err) {
-                    console.error("Errore inizializzazione database:", err);
+                    console.error("Database error:", err);
                 }
             };
 
@@ -213,13 +217,13 @@
                 const id = typeof __app_id !== 'undefined' ? __app_id : 'bordighera-domani-quiz';
                 if (user && dbRef.current && FB) {
                     try {
-                        await FB.addDoc(FB.collection(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard'), {
+                        await FB.addDoc(fb.collection(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard'), {
                             name: playerName,
                             score: finalScore,
                             date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                             ts: Date.now()
                         });
-                    } catch (e) { console.error("Errore salvataggio:", e); }
+                    } catch (e) { console.error("Save error:", e); }
                 }
                 triggerSound('finish');
                 localStorage.setItem('bordi_quiz_played', 'true');
@@ -230,7 +234,7 @@
                 const FB = window.fb;
                 const id = typeof __app_id !== 'undefined' ? __app_id : 'bordighera-domani-quiz';
                 if (FB && dbRef.current) {
-                    await FB.deleteDoc(FB.doc(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard', docId));
+                    await FB.deleteDoc(fb.doc(dbRef.current, 'artifacts', id, 'public', 'data', 'leaderboard', docId));
                 }
                 localStorage.removeItem('bordi_quiz_played');
             };
@@ -243,7 +247,7 @@
 
             return (
                 <div className="min-h-screen flex flex-col items-center justify-center p-4">
-                    <button onClick={() => setSoundEnabled(!soundEnabled)} className="fixed top-4 left-4 p-3 bg-white shadow-md rounded-full text-slate-400 z-50 transition-all active:scale-90">
+                    <button onClick={() => setSoundEnabled(!soundEnabled)} className="fixed top-4 left-4 p-3 bg-white shadow-md rounded-full text-slate-400 z-50">
                         <Icon name={soundEnabled ? "volume" : "volumeX"} />
                     </button>
 
@@ -254,26 +258,31 @@
                             <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter uppercase leading-none">Bordighera Domani</h1>
                             <div className="h-1 w-16 bg-blue-600 mx-auto mb-4 rounded-full mt-2"></div>
                             <p className="text-slate-600 mb-8 font-medium italic">"Conosci davvero il Mugugno cittadino?"</p>
-                            <input type="text" placeholder="Nome e Cognome del Candidato" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none font-bold text-center" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
-                            <button onClick={() => playerName.length > 3 && (triggerSound('start'), setView('quiz'))} disabled={playerName.length <= 3} className="arcade-btn w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg">Inizia il Test</button>
+                            <input type="text" placeholder="Nome e Cognome del Candidato" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none font-bold text-center shadow-sm" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
+                            <button onClick={() => playerName.length >= 3 && (triggerSound('start'), setView('quiz'))} disabled={playerName.length < 3} className="arcade-btn w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg">Inizia il Test</button>
+                            <p className="mt-8 text-[10px] text-slate-400 uppercase font-bold tracking-widest">Archivio Cloud Attivo</p>
                         </div>
                     )}
 
                     {view === 'quiz' && (
-                        <div className="max-w-2xl w-full animate-quiz">
-                            <div className="flex justify-between items-center mb-6 px-1">
+                        <div className="max-w-xl w-full animate-quiz">
+                            <div className="flex justify-between items-center mb-4 px-1">
                                 <span className="text-xs font-black text-blue-900 uppercase tracking-widest">Domanda {currentQuestion + 1}/20</span>
                                 <span className="text-[10px] font-black text-slate-300 uppercase italic">Punteggio Secretato</span>
                             </div>
-                            <div className="w-full bg-slate-200 h-2 rounded-full mb-8 overflow-hidden">
+                            <div className="w-full bg-slate-200 h-1.5 rounded-full mb-6 overflow-hidden">
                                 <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${((currentQuestion + 1)/20)*100}%`}}></div>
                             </div>
-                            <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-8 leading-tight">{quizData[currentQuestion].q}</h2>
-                            <div className="grid gap-3">
+                            <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-6 leading-tight text-center">{quizData[currentQuestion].q}</h2>
+                            <div className="flex flex-col gap-2">
                                 {quizData[currentQuestion].options.map((opt, idx) => (
-                                    <button key={idx} onClick={() => handleAnswer(idx)} className="arcade-btn w-full p-4 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 flex justify-between items-center group shadow-sm transition-all">
-                                        <span className="font-medium text-slate-700 group-hover:text-blue-700 leading-snug">{opt}</span>
-                                        <Icon name="chevron" className="text-slate-300" />
+                                    <button 
+                                        key={idx} 
+                                        onClick={() => handleAnswer(idx)} 
+                                        className="answer-btn arcade-btn w-full py-3 px-4 text-left bg-white border-2 border-slate-100 rounded-xl hover:border-blue-500 flex justify-between items-center group shadow-sm transition-all"
+                                    >
+                                        <span className="text-sm md:text-base font-medium text-slate-700 group-hover:text-blue-700 leading-snug">{opt}</span>
+                                        <Icon name="chevron" className="text-slate-300 w-4 h-4 ml-2 shrink-0" />
                                     </button>
                                 ))}
                             </div>
@@ -282,9 +291,10 @@
 
                     {view === 'results' && (
                         <div className="max-w-sm w-full text-center animate-quiz">
+                            <LogoBordighera className="w-24 h-24 mb-6" />
                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><Icon name="check" className="w-10 h-10 text-green-600" /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2 uppercase tracking-tighter">Test Ultimato</h2>
-                            <p className="text-slate-600 mb-8 leading-relaxed italic">"Ottimo lavoro {playerName.split(' ')[0]}, i tuoi dati sono stati sincronizzati."</p>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2 uppercase">Test Ultimato</h2>
+                            <p className="text-slate-600 mb-8 leading-relaxed">Grazie <strong>{playerName}</strong>, il tuo contributo è stato sincronizzato nel Cloud della lista.</p>
                             <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700 shadow-inner">
                                 <Icon name="eyeOff" className="mx-auto mb-2 text-slate-600 w-8 h-8" />
                                 <p className="text-xs font-black text-slate-300 tracking-widest uppercase">Punteggio Secretato</p>
