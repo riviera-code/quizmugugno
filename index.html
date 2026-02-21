@@ -6,7 +6,7 @@
     
     <!-- Meta Tag per WhatsApp e Social -->
     <title>Quiz del Mugugno - Bordighera Domani 2026</title>
-    <meta name="description" content="Mettiti alla prova: quanto conosci davvero i problemi e le segnalazioni dei cittadini di Bordighera?">
+    <meta name="description" content="Mettiti alla prova: quanto conosci davvero i problemi e le segnalazioni dei cittadini di Bordighera? 20 domande a risposta multipla.">
     <meta property="og:title" content="Quiz del Mugugno - Bordighera Domani 2026">
     <meta property="og:description" content="Mettiti alla prova: quanto conosci davvero i problemi e le segnalazioni dei cittadini di Bordighera?">
     <meta property="og:image" content="https://github.com/riviera-code/quizmugugno/blob/main/Bordighera-domani.png?raw=true">
@@ -40,29 +40,28 @@
         const LOGO_URL = "https://github.com/riviera-code/quizmugugno/blob/main/Bordighera-domani.png?raw=true"; 
         const SECRET_PASSWORD = "BordigheraDomani2026";
 
-        // Quiz Data con 20 domande e opzione "Nessuna delle precedenti"
-        // Alcune domande hanno "Nessuna delle precedenti" come corretta
+        // Quiz Data con 20 domande e 5 opzioni (spalmate casualmente)
         const quizData = [
-            { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Costo eccessivo TARI", "Mancanza di cestini", "Inefficienza sistema tessere e scomodità", "Nessuna delle precedenti"], correct: 2 },
-            { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["La pedonalizzazione completa", "Più stabilimenti privati", "Nuovi parcheggi sulla spiaggia", "Nessuna delle precedenti"], correct: 0 },
-            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi", "Eccesso di rumore", "Afflusso eccessivo di turisti", "Nessuna delle precedenti"], correct: 3 }, // Corretta: Nessuna (il problema sono i negozi chiusi)
-            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi", "Sconnessi, pericolosi e sporchi", "Mancanza di rampe", "Nessuna delle precedenti"], correct: 1 },
-            { id: 5, q: "Zona critica per parcheggio causa sport serali?", options: ["Bordighera Alta", "Corso Europa", "Arziglia", "Nessuna delle precedenti"], correct: 3 }, // Corretta: Nessuna (Via Pasteur)
-            { id: 6, q: "Potenziale sede per un centro culturale annuale?", options: ["Palazzo del Parco", "Mercato Coperto", "Ex Cinema Olimpia", "Nessuna delle precedenti"], correct: 0 },
-            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "Il sentiero del Beodo", "Il clima mite e il paesaggio", "Nessuna delle precedenti"], correct: 2 },
-            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni abbondanti", "Scarsa qualità (massimo ribasso)", "Orari dei pasti", "Nessuna delle precedenti"], correct: 1 },
-            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi", "Migliore illuminazione pubblica", "Più telecamere", "Nessuna delle precedenti"], correct: 1 },
-            { id: 10, q: "Cosa si propone per incentivare l'uso della bicicletta?", options: ["Noleggio bici comunale economico", "Più piste ciclabili alte", "Rastrelliere ovunque", "Nessuna delle precedenti"], correct: 0 },
-            { id: 11, q: "Cosa chiedono i residenti riguardo ai Vigili Urbani?", options: ["Meno multe per divieto", "Più pattuglie in auto", "Presenza fisica a piedi e marciapiedi", "Nessuna delle precedenti"], correct: 2 },
-            { id: 12, q: "Quale eccellenza culturale è citata per l'importanza educativa?", options: ["La Biblioteca Civica", "Teatro della Concordia", "Il Museo Bicknell", "Nessuna delle precedenti"], correct: 0 },
-            { id: 13, q: "Cosa suggeriscono per i parcheggi in centro oltre alla superficie?", options: ["Eliminare le strisce blu", "Bus navetta gratuito", "Permessi solo ai residenti", "Nessuna delle precedenti"], correct: 3 }, // Corretta: Nessuna (Sotterranei)
-            { id: 14, q: "Quale sentimento prevale sul declino della città?", options: ["Rabbia e aggressività", "Indifferenza totale", "Tristezza e malinconia", "Nessuna delle precedenti"], correct: 2 },
-            { id: 15, q: "Iniziativa proposta per aiutare le famiglie in difficoltà?", options: ["Bonus spesa mensili", "Ascolto servizi sociali e supporto bambini", "Nuovi asili nido privati", "Nessuna delle precedenti"], correct: 1 },
-            { id: 16, q: "Che tipo di turismo si vorrebbe incentivare oltre al balneare?", options: ["Turismo crocieristico", "Culturale, sportivo e invernale", "Turismo d'affari", "Nessuna delle precedenti"], correct: 1 },
-            { id: 17, q: "Quale elemento del lungomare è considerato 'inviolabile'?", options: ["I chioschi storici", "Il muraglione", "La rotonda di Sant'Ampelio", "Nessuna delle precedenti"], correct: 3 }, // Corretta: Nessuna (Araucarie)
-            { id: 18, q: "Cosa si suggerisce per contrastare l'accattonaggio molesto?", options: ["Maggiore controllo delle forze dell'ordine", "Zone interdette ai non residenti", "Aiuti economici diretti", "Nessuna delle precedenti"], correct: 0 },
-            { id: 19, q: "Quale termine usano i cittadini per descrivere l'attuale gestione?", options: ["Poca lungimiranza", "Mancanza di ascolto e arroganza", "Troppa burocrazia", "Nessuna delle precedenti"], correct: 1 },
-            { id: 20, q: "Obiettivo principale di un programma per il domani?", options: ["Visione con obiettivi chiari a breve/medio/lungo termine", "Fare eventi ogni weekend", "Riparare solo le buche", "Nessuna delle precedenti"], correct: 0 }
+            { id: 1, q: "Qual è la criticità più frequente sulla gestione rifiuti (RSU)?", options: ["Costo eccessivo TARI", "Mancanza di cestini", "Inefficienza sistema tessere e scomodità", "Pochi passaggi estivi", "Nessuna delle precedenti"], correct: 2 },
+            { id: 2, q: "Cosa chiedono i cittadini per il rilancio del lungomare?", options: ["Aumento dei dehors", "La pedonalizzazione completa", "Più stabilimenti privati", "Nuovi parcheggi sulla spiaggia", "Nessuna delle precedenti"], correct: 1 },
+            { id: 3, q: "Quale problema affligge i locali commerciali del centro?", options: ["Affitti troppo bassi", "Eccesso di rumore notturno", "Aumento eccessivo della criminalità", "Scarsità di prodotti locali", "Nessuna delle precedenti"], correct: 4 }, // Corretta: Nessuna (Negozi chiusi/vetrine vuote)
+            { id: 4, q: "Lamentela principale sulla manutenzione marciapiedi?", options: ["Sono troppo larghi", "Colore pavimentazione", "Mancanza di illuminazione radente", "Sconnessi, pericolosi e sporchi", "Nessuna delle precedenti"], correct: 3 },
+            { id: 5, q: "Zona critica per parcheggio causa sport serali?", options: ["Bordighera Alta", "Corso Europa", "Arziglia", "Zona Porto", "Nessuna delle precedenti"], correct: 4 }, // Corretta: Nessuna (Via Pasteur/Piazza Morlotti)
+            { id: 6, q: "Potenziale sede per un centro culturale annuale?", options: ["Palazzo del Parco", "Mercato Coperto", "Ex Cinema Olimpia", "Sede dei Vigili", "Nessuna delle precedenti"], correct: 0 },
+            { id: 7, q: "L'eccellenza naturale 'intoccabile' di Bordighera?", options: ["Le spiagge di sassi", "Il clima mite e il paesaggio", "Il sentiero del Beodo", "La scogliera di Sant'Ampelio", "Nessuna delle precedenti"], correct: 1 },
+            { id: 8, q: "Critica principale alla mensa scolastica?", options: ["Porzioni abbondanti", "Orari dei pasti", "Scarsa qualità (massimo ribasso)", "Mancanza opzioni bio", "Nessuna delle precedenti"], correct: 2 },
+            { id: 9, q: "Cosa chiedono per Via Romana e periferie?", options: ["Nuovi dossi", "Più telecamere", "Rifacimento asfalto", "Migliore illuminazione pubblica", "Nessuna delle precedenti"], correct: 3 },
+            { id: 10, q: "Cosa si propone per incentivare l'uso della bicicletta?", options: ["Noleggio bici comunale economico", "Più piste ciclabili alte", "Rastrelliere ovunque", "ZTL per le auto", "Nessuna delle precedenti"], correct: 0 },
+            { id: 11, q: "Cosa chiedono i residenti riguardo ai Vigili Urbani?", options: ["Meno multe per divieto", "Presenza fisica a piedi e marciapiedi", "Più pattuglie in auto", "Più uffici aperti", "Nessuna delle precedenti"], correct: 1 },
+            { id: 12, q: "Quale eccellenza culturale è citata per l'importanza educativa?", options: ["Teatro della Concordia", "Il Museo Bicknell", "Villa Regina Margherita", "La Biblioteca Civica", "Nessuna delle precedenti"], correct: 3 },
+            { id: 13, q: "Cosa suggeriscono per i parcheggi in centro oltre alla superficie?", options: ["Eliminare le strisce blu", "Bus navetta gratuito", "Permessi solo ai residenti", "Nuovi silos fuori città", "Nessuna delle precedenti"], correct: 4 }, // Corretta: Nessuna (Parcheggi sotterranei)
+            { id: 14, q: "Quale sentimento prevale sul declino della città?", options: ["Rabbia e aggressività", "Indifferenza totale", "Tristezza e malinconia", "Speranza immediata", "Nessuna delle precedenti"], correct: 2 },
+            { id: 15, q: "Iniziativa proposta per aiutare le famiglie in difficoltà?", options: ["Bonus spesa mensili", "Nuovi asili nido privati", "Esonero tasse comunali", "Ascolto servizi sociali e supporto bambini", "Nessuna delle precedenti"], correct: 3 },
+            { id: 16, q: "Che tipo di turismo si vorrebbe incentivare oltre al balneare?", options: ["Turismo crocieristico", "Turismo d'affari", "Parchi a tema", "Culturale, sportivo e invernale", "Nessuna delle precedenti"], correct: 3 },
+            { id: 17, q: "Quale elemento del lungomare è considerato 'inviolabile'?", options: ["I chioschi storici", "Il muraglione", "La rotonda di Sant'Ampelio", "L'area cani", "Nessuna delle precedenti"], correct: 4 }, // Corretta: Nessuna (Araucarie)
+            { id: 18, q: "Cosa si suggerisce per contrastare l'accattonaggio molesto?", options: ["Maggiore controllo delle forze dell'ordine", "Zone interdette ai non residenti", "Aiuti economici diretti", "Campagna di sensibilizzazione", "Nessuna delle precedenti"], correct: 0 },
+            { id: 19, q: "Quale termine usano i cittadini per descrivere l'attuale gestione?", options: ["Poca lungimiranza", "Mancanza di ascolto e arroganza", "Troppa burocrazia", "Mancanza di fondi", "Nessuna delle precedenti"], correct: 1 },
+            { id: 20, q: "Obiettivo principale di un programma per il domani?", options: ["Fare eventi ogni weekend", "Riparare solo le buche", "Visione con obiettivi chiari a breve/medio/lungo termine", "Abbassare l'età dei consiglieri", "Nessuna delle precedenti"], correct: 2 }
         ];
 
         const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -107,7 +106,6 @@
             const [errorMsg, setErrorMsg] = useState('');
             const [soundEnabled, setSoundEnabled] = useState(true);
             
-            // Audio Ref per gestire un unico contesto
             const audioCtxRef = useRef(null);
 
             useEffect(() => {
@@ -132,7 +130,7 @@
                 
                 const ctx = await getAudioCtx();
                 const masterGain = ctx.createGain();
-                masterGain.gain.value = 0.1;
+                masterGain.gain.value = 0.08;
                 masterGain.connect(ctx.destination);
 
                 const playNote = (freq, start, duration, wave = 'square') => {
@@ -140,7 +138,7 @@
                     const g = ctx.createGain();
                     osc.type = wave;
                     osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
-                    g.gain.setValueAtTime(0.1, ctx.currentTime + start);
+                    g.gain.setValueAtTime(0.08, ctx.currentTime + start);
                     g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + start + duration);
                     osc.connect(g);
                     g.connect(masterGain);
@@ -150,20 +148,16 @@
 
                 switch(type) {
                     case 'start':
-                        playNote(261.63, 0, 0.1);
-                        playNote(329.63, 0.1, 0.1);
-                        playNote(392.00, 0.2, 0.3);
+                        playNote(261.63, 0, 0.1); playNote(329.63, 0.1, 0.1); playNote(392.00, 0.2, 0.3);
                         break;
                     case 'select':
                         playNote(600, 0, 0.05, 'sine');
                         break;
                     case 'correct':
-                        playNote(523.25, 0, 0.1);
-                        playNote(659.25, 0.1, 0.2);
+                        playNote(523.25, 0, 0.1); playNote(659.25, 0.1, 0.2);
                         break;
                     case 'wrong':
-                        playNote(220, 0, 0.1);
-                        playNote(180, 0.1, 0.3);
+                        playNote(220, 0, 0.1); playNote(180, 0.1, 0.3);
                         break;
                     case 'finish':
                         [523, 659, 783, 1046].forEach((f, i) => playNote(f, i * 0.1, 0.4, 'triangle'));
@@ -200,7 +194,7 @@
                 }
             };
 
-            function checkPassword() {
+            const checkPassword = () => {
                 triggerSound('select');
                 if (passInput === SECRET_PASSWORD) { 
                     setIsUnlocked(true); 
@@ -209,13 +203,21 @@
                     setErrorMsg('Codice errato.'); 
                     setPassInput(''); 
                 }
-            }
+            };
 
             const startQuiz = () => {
-                if (playerName.length >= 2) {
+                if (playerName.length >= 3) {
                     triggerSound('start');
                     setView('quiz');
                 }
+            };
+
+            const deleteEntry = (id) => {
+                triggerSound('wrong');
+                const up = localLeaderboard.filter(e => e.id !== id);
+                setLocalLeaderboard(up);
+                localStorage.setItem('bordi_leaderboard', JSON.stringify(up));
+                localStorage.removeItem('bordi_quiz_played');
             };
 
             return (
@@ -233,6 +235,7 @@
                             <button onClick={() => { triggerSound('select'); setView('leaderboard'); }} className="absolute -top-12 -right-4 p-2 text-slate-300 hover:text-blue-500 transition-colors">
                                 <Icon name="settings" className="w-5 h-5" />
                             </button>
+
                             <LogoBordighera className="w-32 h-32 mb-6" />
                             <h1 className="text-3xl font-black text-blue-900 mb-1 tracking-tighter uppercase leading-none">Bordighera Domani</h1>
                             <div className="h-1 w-16 bg-blue-600 mx-auto mb-4 rounded-full mt-2"></div>
@@ -244,10 +247,10 @@
                                 value={playerName} 
                                 onChange={(e) => setPlayerName(e.target.value)} 
                             />
-                            <button onClick={startQuiz} disabled={playerName.length < 2} className="arcade-btn w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg transition-all">
+                            <button onClick={startQuiz} disabled={playerName.length < 3} className="arcade-btn w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-lg transition-all">
                                 Inizia il Test
                             </button>
-                            <p className="mt-8 text-[10px] text-slate-400 uppercase font-bold tracking-widest">Area Riservata Candidati</p>
+                            <p className="mt-8 text-[10px] text-slate-400 uppercase font-bold tracking-widest tracking-[0.2em]">Area Riservata Candidati</p>
                         </div>
                     )}
 
@@ -256,17 +259,17 @@
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center space-x-3">
                                     <img src={LOGO_URL} className="w-8 h-8 object-contain" alt="mini logo" />
-                                    <span className="text-xs font-black text-blue-900 uppercase tracking-widest font-bold">Analisi Criticità {currentQuestion + 1}/{quizData.length}</span>
+                                    <span className="text-xs font-black text-blue-900 uppercase tracking-widest font-bold">Domanda {currentQuestion + 1}/{quizData.length}</span>
                                 </div>
                                 <span className="text-[10px] font-black text-slate-300 uppercase italic">Punteggio Secretato</span>
                             </div>
                             <div className="w-full bg-slate-200 h-2 rounded-full mb-8 overflow-hidden">
                                 <div className="h-full bg-blue-600 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(37,99,235,0.5)]" style={{ width: `${((currentQuestion + 1)/quizData.length)*100}%`}}></div>
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-8 leading-tight">{quizData[currentQuestion].q}</h2>
+                            <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-8 leading-tight">{quizData[currentQuestion].q}</h2>
                             <div className="grid gap-3">
                                 {quizData[currentQuestion].options.map((opt, idx) => (
-                                    <button key={idx} onClick={() => handleAnswer(idx)} className="arcade-btn w-full p-5 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all flex justify-between items-center group shadow-sm">
+                                    <button key={idx} onClick={() => handleAnswer(idx)} className="arcade-btn w-full p-4 md:p-5 text-left bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all flex justify-between items-center group shadow-sm">
                                         <span className="font-medium text-slate-700 group-hover:text-blue-700 leading-snug">{opt}</span>
                                         <Icon name="chevron" className="text-slate-300 group-hover:text-blue-500 w-5 h-5 flex-shrink-0" />
                                     </button>
@@ -282,11 +285,11 @@
                                 <Icon name="check" className="w-10 h-10 text-green-600" />
                             </div>
                             <h2 className="text-2xl font-bold text-slate-800 mb-2 uppercase tracking-tighter">Test Ultimato</h2>
-                            <p className="text-slate-600 mb-8 leading-relaxed italic">"Ottimo lavoro {playerName}, il tuo test è stato acquisito!"</p>
+                            <p className="text-slate-600 mb-8 leading-relaxed italic">"Ottimo lavoro {playerName.split(' ')[0]}, il tuo test è stato acquisito con successo!"</p>
                             <div className="p-6 bg-slate-900 rounded-3xl mb-8 border border-slate-700 shadow-inner">
                                 <Icon name="eyeOff" className="mx-auto mb-2 text-slate-600 w-8 h-8" />
                                 <p className="text-xs font-black text-slate-300 tracking-widest">RISULTATO SECRETATO</p>
-                                <p className="text-[10px] text-slate-500 mt-2 uppercase">L'amministratore valuterà le risposte</p>
+                                <p className="text-[10px] text-slate-500 mt-2 uppercase">I dati reali sono disponibili solo in Archivio Admin</p>
                             </div>
                             <button onClick={() => { triggerSound('select'); setView('leaderboard'); }} className="arcade-btn w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center transition-transform">
                                 <Icon name="lock" className="w-4 h-4 mr-2" /> Archivio Admin
@@ -302,8 +305,8 @@
                                         <Icon name="shield" className="w-8 h-8 text-blue-600" />
                                     </div>
                                     <h2 className="text-xl font-bold mb-6 text-slate-800 uppercase tracking-tighter">Login Amministratore</h2>
-                                    <input type="password" placeholder="Passcode" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center text-xl tracking-widest font-mono shadow-inner" value={passInput} onChange={(e) => setPassInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && checkPassword()} />
-                                    {errorMsg && <p className="text-red-500 text-xs mb-4 font-bold">{errorMsg}</p>}
+                                    <input type="password" placeholder="Passcode Segreto" className="w-full px-4 py-4 mb-4 bg-white border-2 border-slate-100 rounded-2xl text-center text-xl tracking-widest font-mono shadow-inner" value={passInput} onChange={(e) => setPassInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && checkPassword()} />
+                                    {errorMsg && <p className="text-red-500 text-xs mb-4 font-bold tracking-tight">{errorMsg}</p>}
                                     <div className="flex gap-2">
                                         <button onClick={() => { triggerSound('select'); setView('register'); }} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">Esci</button>
                                         <button onClick={checkPassword} className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl">Sblocca</button>
@@ -333,10 +336,13 @@
                                                 </div>
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex items-baseline space-x-0.5 font-black text-blue-600 text-lg">{entry.score}<span className="text-[10px] font-bold text-slate-300 uppercase ml-0.5">pt</span></div>
-                                                    <button onClick={() => { triggerSound('wrong'); const up = localLeaderboard.filter(e => e.id !== entry.id); setLocalLeaderboard(up); localStorage.setItem('bordi_leaderboard', JSON.stringify(up)); localStorage.removeItem('bordi_quiz_played'); }} className="p-2 text-slate-200 hover:text-red-500 transition-colors"><Icon name="trash" className="w-4 h-4" /></button>
+                                                    <button onClick={() => deleteEntry(entry.id)} className="p-2 text-slate-200 hover:text-red-500 transition-colors"><Icon name="trash" className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
                                         ))}
+                                        {localLeaderboard.length === 0 && (
+                                            <div className="p-12 text-center text-slate-300 font-medium italic">Nessun dato registrato.</div>
+                                        )}
                                     </div>
                                 </div>
                             )}
